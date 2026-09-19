@@ -38,11 +38,14 @@ This project was built as a semester project for a Mobile Application Developmen
 - **Kotlin** - Android platform-specific native code (`MainActivity`)
 - **Gradle** - Android build system
 
+### State Management
+
+- **provider** - Application state handling and dependency access across features
+
 ### Planned Packages and Tools
 
 - **Sensors package** (e.g. `sensors_plus` / `pedometer`) - Access to device accelerometer and step-detection APIs
 - **Local storage** (e.g. `sqflite` / `hive` / `shared_preferences`) - On-device persistence for step history, goals, and settings
-- **State management** (e.g. `provider` / `riverpod` / `bloc`) - Application state handling
 - **Charting library** (e.g. `fl_chart` / `syncfusion_flutter_charts`) - Weekly step trend visualization
 - **Local notifications** (e.g. `flutter_local_notifications`) - Daily goal reminder nudges
 - **File/data export** (e.g. `share_plus` / `csv`) - Exporting and sharing walking history
@@ -59,26 +62,37 @@ This project was built as a semester project for a Mobile Application Developmen
 ```
 lib/
   core/
-    constants/       Application-wide constant values
-    theme/            App theming and styling
-    utils/            Shared utility/helper functions
-    services/         Sensor, notification, and other platform services
+    constants/        Application-wide constant values
+    theme/             App theming and styling
+    utils/             Shared utility/helper functions
+    services/          Sensor, notification, and other platform services
+    di/                Service locator / dependency wiring for repositories
+    router/            App routing and navigation configuration
   data/
-    models/           Data models (step entries, goals, streaks)
-    repositories/      Data access layer
-    local/            Local persistence implementation
+    models/            Data models (step entries, goals, streaks)
+    repositories/       Data access layer (interfaces and implementations)
+    local/             Local persistence implementation
   features/
-    home/             Home dashboard with live step count and progress ring
-    history/          Historical step data views
-    streak/           Streak tracking logic and UI
-    goals/            Daily goal configuration
-    settings/         App settings and preferences
-    export/           Data export and sharing
-  widgets/            Shared, reusable UI components
+    home/              Home dashboard with live step count and progress ring
+      presentation/     Screens and widgets
+      providers/        Feature-level state management (Provider)
+    history/           Historical step data views
+    streak/            Streak tracking logic and UI
+    goals/             Daily goal configuration
+    settings/          App settings and preferences
+    export/            Data export and sharing
+  widgets/             Shared, reusable UI components
 assets/
-  images/             Image assets
-  icons/              Icon assets
+  images/              Image assets
+  icons/               Icon assets
+test/
+  core/                Unit tests mirroring lib/core
+  data/                Unit tests mirroring lib/data
+  features/            Widget/unit tests mirroring lib/features
+releases/               Local build outputs (APKs), not committed to git
 ```
+
+Each feature folder (`home`, `history`, `streak`, `goals`, `settings`, `export`) contains its own `presentation/` (screens and widgets) and `providers/` (state management) subfolders, keeping feature work isolated between team members.
 
 ## Getting Started
 
@@ -106,6 +120,20 @@ assets/
    ```
    flutter run
    ```
+
+## Team Collaboration
+
+This project is developed by a team of three, each working on a dedicated branch:
+
+- **FullStack/Abdullah-Rana** - Full-stack development, primarily focused on the backend/data layer (`lib/core/services`, `lib/data`, `lib/core/di`)
+- **FrontEnd/Ahmad-Ali** - Frontend feature development (`lib/features`, UI screens and widgets)
+- **Database/Abdullah-Qureshi** - Local database and persistence layer (`lib/data/local`, `lib/data/repositories`)
+
+Feature folders under `lib/features/` are structured so each contributor can work independently within their own `presentation/` and `providers/` subfolders without conflicting with the data layer.
+
+## Release Builds
+
+Locally built APKs can be placed in the `releases/` folder for quick access and sharing among the team. This folder is tracked in git, but `.apk`/`.aab` files inside it are excluded from version control to keep the repository lightweight. Each team member manages their own local builds in this folder.
 
 ## Platform Scope
 

@@ -56,3 +56,7 @@ key.properties
 # Windows/OS junk
 Thumbs.db
 Desktop.ini
+
+# Local release builds (APKs kept local-only, not committed)
+/releases/*.apk
+/releases/*.aab
