@@ -100,6 +100,20 @@ Additional and updated architecture diagrams for individual features are maintai
 
 Static exports of the UI/UX designs (screens, states, and flows) are kept in the [`design/`](design/) folder for reference during frontend implementation, organized by feature: Dashboard, History, Live Tracking, On-Boardings, Settings, FAQ, and Water Reminder. These are reference snapshots only, not editable design source files.
 
+### Screens
+
+<div align="center">
+
+| Login | Sign Up | Dashboard |
+|:---:|:---:|:---:|
+| <img src="design/On-Boardings/17_Light_sign in filled form.png" width="220"/> | <img src="design/On-Boardings/7_Light_sign up filled form.png" width="220"/> | <img src="design/DashBoard/25_Light_home - default.png" width="220"/> |
+
+| Water Level | Live Tracking |
+|:---:|:---:|
+| <img src="design/Water Remind/47_Dark_water tracker.png" width="220"/> | <img src="design/LiveTracking/30_Light_track.png" width="220"/> |
+
+</div>
+
 ## Project Structure
 
 ```
