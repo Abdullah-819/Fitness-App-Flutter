@@ -96,6 +96,10 @@ The bottom strip of the diagram shows the local build pipeline: development in V
 
 Additional and updated architecture diagrams for individual features are maintained in the [`architectures/`](architectures/) folder.
 
+## Design
+
+Static exports of the UI/UX designs (screens, states, and flows) are kept in the [`design/`](design/) folder for reference during frontend implementation, organized by feature: Dashboard, History, Live Tracking, On-Boardings, Settings, FAQ, and Water Reminder. These are reference snapshots only, not editable design source files.
+
 ## Project Structure
 
 ```
