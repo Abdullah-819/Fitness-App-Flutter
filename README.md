@@ -13,8 +13,8 @@ A privacy-friendly Flutter application for Android that helps users track their 
 | <img src="https://ui-avatars.com/api/?name=Abdullah+Rana&background=1E293B&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> | <img src="https://ui-avatars.com/api/?name=Ahmad+Ali&background=0F766E&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> | <img src="https://ui-avatars.com/api/?name=Abdullah+Qureshi&background=7C2D12&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> |
 |:---:|:---:|:---:|
 | **Abdullah Rana** | **Ahmad Ali** | **Abdullah Qureshi** |
-| Full Stack Developer | Frontend Developer | Database Engineer |
-| `FullStack/Abdullah-Rana` | `FrontEnd/Ahmad-Ali` | `Database/Abdullah-Qureshi` |
+| Full Stack Engineer | Frontend Developer | Frontend Developer |
+| `FullStack/Abdullah-Rana` | `FrontEnd/Ahmad-Ali` | `FrontEnd/Abdullah-Qureshi` |
 
 </div>
 
