@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/constants/app_colors.dart';
+import 'features/onboarding/presentation/screens/welcome_screen.dart';
 import 'features/splash/presentation/screens/splash_screen.dart';
 
 void main() {
@@ -24,10 +25,25 @@ class StepCounterApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: AppColors.primaryPurple,
       ),
-      home: SplashScreen(
-        onInitialized: () {
-          // Placeholder callback when onboarding or dashboard is wired up
-          debugPrint('Splash initialization complete.');
+      home: Builder(
+        builder: (context) {
+          return SplashScreen(
+            duration: const Duration(milliseconds: 2500),
+            onInitialized: () {
+              // Smooth fade transition to WelcomeScreen
+              Navigator.of(context).pushReplacement(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const WelcomeScreen(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+              );
+            },
+          );
         },
       ),
     );

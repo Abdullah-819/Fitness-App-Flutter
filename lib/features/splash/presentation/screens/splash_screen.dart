@@ -1,20 +1,23 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../widgets/fading_spinner.dart';
 import '../widgets/footprints_icon.dart';
 
-/// Minimalist splash screen for Step Counter & Walking Goals.
+/// Minimalist, high-performance splash screen for Step Counter & Walking Goals.
 ///
 /// Features:
-/// - Flat vibrant purple background (#7C3AED)
-/// - Centered overlapping shoe-prints silhouette
-/// - Bold, rounded sans-serif title typography
-/// - Smooth animated gradient circular loading spinner
-/// - Configurable initialization duration and transition callback
+/// - Full-bleed vibrant purple background (#7C3AED)
+/// - Authentic design asset logo with smooth fade & scale entrance animation
+/// - Bold, rounded typography
+/// - Rotating circular sweep-gradient loading spinner
+/// - Configurable initialization duration and completion callback
 class SplashScreen extends StatefulWidget {
-  /// The time the splash screen displays before triggering [onInitialized].
+  /// The duration the splash screen displays before triggering [onInitialized].
   final Duration duration;
 
   /// Callback executed when the splash delay finishes.
@@ -30,12 +33,35 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+
+    // Entrance animation for logo and title
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.90, end: 1.0).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
+    );
+
+    _animController.forward();
+
+    // Timer to trigger navigation/callback
     if (widget.onInitialized != null) {
       _timer = Timer(widget.duration, () {
         if (mounted) {
@@ -48,6 +74,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _animController.dispose();
     super.dispose();
   }
 
@@ -69,29 +96,48 @@ class _SplashScreenState extends State<SplashScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Spacer(flex: 3),
-                // Overlapping shoeprints silhouette icon
-                const FootprintsIcon(
-                  size: 110,
-                  color: AppColors.white,
-                ),
-                const SizedBox(height: 24),
-                // App Title
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 32.0),
-                  child: Text(
-                    'Step Counter &\nWalking Goals',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5,
-                      height: 1.25,
+                // Animated logo & typography block
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Design asset logo with fallback to vector painter
+                        Image.asset(
+                          AppAssets.logoWhite,
+                          width: 110,
+                          height: 110,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const FootprintsIcon(
+                                size: 110,
+                                color: AppColors.white,
+                              ),
+                        ),
+                        const SizedBox(height: 24),
+                        // App Title
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 32.0),
+                          child: Text(
+                            'Step Counter &\nWalking Goals',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
+                              height: 1.25,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
                 const Spacer(flex: 4),
-                // Bottom loading spinner
+                // Smooth rotating loading spinner
                 const FadingSpinner(
                   size: 50,
                   strokeWidth: 4.5,
