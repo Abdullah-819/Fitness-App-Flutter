@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:step_counter/features/splash/presentation/screens/splash_screen.dart';
 import 'package:step_counter/features/splash/presentation/widgets/fading_spinner.dart';
+import 'package:step_counter/features/splash/presentation/widgets/footprints_icon.dart';
 
 void main() {
   testWidgets(
-    'SplashScreen renders title, logo, and spinner and triggers callback',
+    'SplashScreen renders title, footprints icon, and spinner and triggers callback',
     (WidgetTester tester) async {
       bool initialized = false;
 
@@ -20,11 +21,11 @@ void main() {
         ),
       );
 
-      // Verify title text exists
-      expect(find.text('Step Counter &\nWalking Goals'), findsOneWidget);
+      // Verify TrackFit brand exists
+      expect(find.bySemanticsLabel('TrackFit'), findsOneWidget);
 
-      // Verify Logo Image exists
-      expect(find.byType(Image), findsOneWidget);
+      // Verify FootprintsIcon exists
+      expect(find.byType(FootprintsIcon), findsOneWidget);
 
       // Verify FadingSpinner exists
       expect(find.byType(FadingSpinner), findsOneWidget);

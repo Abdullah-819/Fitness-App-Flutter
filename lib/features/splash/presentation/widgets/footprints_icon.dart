@@ -2,18 +2,34 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// Minimalist, flat vector rendering of two overlapping shoeprints / footprints.
+/// High-fidelity rendering of the TrackFit overlapping footprints logo.
 class FootprintsIcon extends StatelessWidget {
   final double size;
-  final Color color;
+  final Color? color;
+  final bool useAsset;
 
-  const FootprintsIcon({super.key, this.size = 110, this.color = Colors.white});
+  const FootprintsIcon({
+    super.key,
+    this.size = 110,
+    this.color,
+    this.useAsset = true,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (useAsset) {
+      return Image.asset(
+        'assets/images/footprints_logo.png',
+        width: size,
+        height: size * 1.02,
+        fit: BoxFit.contain,
+        color: color,
+      );
+    }
+
     return CustomPaint(
-      size: Size(size, size * 1.15),
-      painter: _FootprintsPainter(color: color),
+      size: Size(size, size * 1.02),
+      painter: _FootprintsPainter(color: color ?? Colors.white),
     );
   }
 }

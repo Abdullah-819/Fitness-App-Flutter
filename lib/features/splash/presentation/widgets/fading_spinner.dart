@@ -10,8 +10,8 @@ class FadingSpinner extends StatefulWidget {
 
   const FadingSpinner({
     super.key,
-    this.size = 54,
-    this.strokeWidth = 4.5,
+    this.size = 58,
+    this.strokeWidth = 7.0,
     this.color = Colors.white,
   });
 
@@ -73,15 +73,18 @@ class _FadingArcPainter extends CustomPainter {
       size.height - strokeWidth,
     );
 
+    const arcAngle = 1.75 * math.pi;
+
     final gradient = SweepGradient(
       startAngle: 0.0,
-      endAngle: 1.6 * math.pi,
+      endAngle: arcAngle,
       colors: [
         color.withValues(alpha: 0.0),
-        color.withValues(alpha: 0.4),
+        color.withValues(alpha: 0.25),
+        color.withValues(alpha: 0.65),
         color,
       ],
-      stops: const [0.0, 0.4, 1.0],
+      stops: const [0.0, 0.35, 0.75, 1.0],
     );
 
     final paint = Paint()
@@ -90,7 +93,7 @@ class _FadingArcPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    canvas.drawArc(rect, 0.0, 1.6 * math.pi, false, paint);
+    canvas.drawArc(rect, 0.0, arcAngle, false, paint);
   }
 
   @override

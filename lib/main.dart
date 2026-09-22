@@ -15,7 +15,7 @@ class StepCounterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Step Counter & Walking Goals',
+      title: 'TrackFit',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
