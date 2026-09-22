@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/constants/app_colors.dart';
-import 'features/onboarding/presentation/screens/welcome_screen.dart';
+import 'features/auth/presentation/screens/sign_in_screen.dart';
 import 'features/splash/presentation/screens/splash_screen.dart';
 
 void main() {
@@ -30,11 +30,11 @@ class StepCounterApp extends StatelessWidget {
           return SplashScreen(
             duration: const Duration(milliseconds: 2500),
             onInitialized: () {
-              // Smooth fade transition to WelcomeScreen
+              // Smooth fade transition to SignInScreen
               Navigator.of(context).pushReplacement(
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
-                      const WelcomeScreen(),
+                      const SignInScreen(),
                   transitionsBuilder:
                       (context, animation, secondaryAnimation, child) {
                         return FadeTransition(opacity: animation, child: child);
