@@ -161,7 +161,7 @@ Each feature folder (`home`, `history`, `streak`, `goals`, `settings`, `export`)
 
 ### Setup
 
-1. Clone the repository:
+1. For the Cloning of the repository:
    ```
    git clone https://github.com/Abdullah-819/Fitness-App-Flutter.git
    ```
