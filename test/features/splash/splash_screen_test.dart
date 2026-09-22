@@ -5,35 +5,36 @@ import 'package:step_counter/features/splash/presentation/widgets/fading_spinner
 import 'package:step_counter/features/splash/presentation/widgets/footprints_icon.dart';
 
 void main() {
-  testWidgets('SplashScreen renders title, footprints icon, and spinner', (
-    WidgetTester tester,
-  ) async {
-    bool initialized = false;
+  testWidgets(
+    'SplashScreen renders title, footprints icon, and spinner and triggers callback',
+    (WidgetTester tester) async {
+      bool initialized = false;
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: SplashScreen(
-          duration: const Duration(milliseconds: 500),
-          onInitialized: () {
-            initialized = true;
-          },
+      await tester.pumpWidget(
+        MaterialApp(
+          home: SplashScreen(
+            duration: const Duration(milliseconds: 500),
+            onInitialized: () {
+              initialized = true;
+            },
+          ),
         ),
-      ),
-    );
+      );
 
-    // Verify title text exists
-    expect(find.text('Step Counter &\nWalking Goals'), findsOneWidget);
+      // Verify TrackFit brand exists
+      expect(find.bySemanticsLabel('TrackFit'), findsOneWidget);
 
-    // Verify FootprintsIcon exists
-    expect(find.byType(FootprintsIcon), findsOneWidget);
+      // Verify FootprintsIcon exists
+      expect(find.byType(FootprintsIcon), findsOneWidget);
 
-    // Verify FadingSpinner exists
-    expect(find.byType(FadingSpinner), findsOneWidget);
+      // Verify FadingSpinner exists
+      expect(find.byType(FadingSpinner), findsOneWidget);
 
-    // Advance time past the splash duration
-    await tester.pump(const Duration(milliseconds: 600));
+      // Advance animation past entrance and splash duration
+      await tester.pump(const Duration(milliseconds: 600));
 
-    // Verify callback was invoked
-    expect(initialized, isTrue);
-  });
+      // Verify callback was invoked
+      expect(initialized, isTrue);
+    },
+  );
 }
