@@ -68,36 +68,42 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Spacer(flex: 3),
+                const Spacer(flex: 5),
                 // Overlapping shoeprints silhouette icon
                 const FootprintsIcon(
-                  size: 110,
-                  color: AppColors.white,
+                  size: 108,
                 ),
-                const SizedBox(height: 24),
-                // App Title
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 32.0),
-                  child: Text(
-                    'Step Counter &\nWalking Goals',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5,
-                      height: 1.25,
-                    ),
+                const SizedBox(height: 28),
+                // TrackFit Brand Title
+                Semantics(
+                  header: true,
+                  label: 'TrackFit',
+                  child: Image.asset(
+                    'assets/images/trackfit_text_transparent.png',
+                    height: 32,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Text(
+                        'TrackFit',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.5,
+                        ),
+                      );
+                    },
                   ),
                 ),
-                const Spacer(flex: 4),
-                // Bottom loading spinner
+                const Spacer(flex: 6),
+                // Bottom animated loading spinner
                 const FadingSpinner(
-                  size: 50,
-                  strokeWidth: 4.5,
+                  size: 58,
+                  strokeWidth: 7.0,
                   color: AppColors.white,
                 ),
-                const SizedBox(height: 52),
+                const SizedBox(height: 58),
               ],
             ),
           ),

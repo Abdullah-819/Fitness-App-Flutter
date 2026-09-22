@@ -21,8 +21,8 @@ void main() {
       ),
     );
 
-    // Verify title text exists
-    expect(find.text('Step Counter &\nWalking Goals'), findsOneWidget);
+    // Verify TrackFit brand exists
+    expect(find.bySemanticsLabel('TrackFit'), findsOneWidget);
 
     // Verify FootprintsIcon exists
     expect(find.byType(FootprintsIcon), findsOneWidget);

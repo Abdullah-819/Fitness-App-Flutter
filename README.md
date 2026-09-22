@@ -1,6 +1,26 @@
+<div align="center">
+
 # Step Counter & Walking Goals
 
-A privacy-friendly Flutter application for Android that helps users track their daily physical activity and stay motivated toward a healthier lifestyle. The app uses the device's built-in motion and activity sensors to automatically count steps, with no external hardware, wearables, or manual logging required.
+A privacy-friendly Flutter application for Android that helps users track their daily physical activity and stay motivated toward a healthier lifestyle.
+
+</div>
+
+<div align="center">
+
+### Team
+
+| <img src="https://ui-avatars.com/api/?name=Abdullah+Rana&background=1E293B&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> | <img src="https://ui-avatars.com/api/?name=Ahmad+Ali&background=0F766E&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> | <img src="https://ui-avatars.com/api/?name=Abdullah+Qureshi&background=7C2D12&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> |
+|:---:|:---:|:---:|
+| **Abdullah Rana** | **Ahmad Ali** | **Abdullah Qureshi** |
+| Full Stack Engineer | Frontend Developer | Frontend Developer |
+| `FullStack/Abdullah-Rana` | `FrontEnd/Ahmad-Ali` | `FrontEnd/Abdullah-Qureshi` |
+
+</div>
+
+---
+
+The app uses the device's built-in motion and activity sensors to automatically count steps, with no external hardware, wearables, or manual logging required.
 
 ## Overview
 
@@ -57,6 +77,43 @@ This project was built as a semester project for a Mobile Application Developmen
 - **Android Studio / VS Code** - Development environment
 - **Git & GitHub** - Version control and source hosting
 
+## Architecture
+
+The application follows a layered architecture that separates UI, state management, dependency wiring, domain logic, and platform services, allowing the team to work on distinct layers in parallel without conflicts.
+
+![Step Counter Architecture Diagram](architectures/step_counter_architecture.png)
+
+**Flow summary:**
+
+1. **Presentation Layer** - Each screen (Home, Goals, History, Streak, Settings, Export) is bound to its own `Provider` for state management.
+2. **Dependency Injection** - Providers resolve their dependencies through a central `ServiceLocator` (`core/di`), which constructs and exposes repository instances.
+3. **Domain / Data Access Layer** - Repositories (`StepRepository`, `GoalRepository`, `HistoryRepository`, `StreakRepository`) mediate between the UI and both core services and local persistence.
+4. **Core Services** - `SensorService` reads step data from the device's native sensors; `NotificationService` triggers daily goal reminders.
+5. **Local Persistence** - Repositories read and write structured data (step history, streaks) to a local database (SQLite/Hive) and simple key-value data (settings, goals) to shared preferences.
+6. **Device Hardware** - The Android OS exposes the accelerometer and step detector sensor APIs, streamed natively into the app process.
+
+The bottom strip of the diagram shows the local build pipeline: development in VS Code / Android Studio, compiled via the Flutter SDK and Gradle, producing an APK that is placed in the `releases/` folder and version-controlled through Git and GitHub.
+
+Additional and updated architecture diagrams for individual features are maintained in the [`architectures/`](architectures/) folder.
+
+## Design
+
+Static exports of the UI/UX designs (screens, states, and flows) are kept in the [`design/`](design/) folder for reference during frontend implementation, organized by feature: Dashboard, History, Live Tracking, On-Boardings, Settings, FAQ, and Water Reminder. These are reference snapshots only, not editable design source files.
+
+### Screens
+
+<div align="center">
+
+| Login | Sign Up | Dashboard |
+|:---:|:---:|:---:|
+| <img src="design/On-Boardings/17_Light_sign in filled form.png" width="220"/> | <img src="design/On-Boardings/7_Light_sign up filled form.png" width="220"/> | <img src="design/DashBoard/25_Light_home - default.png" width="220"/> |
+
+| Water Level | Live Tracking |
+|:---:|:---:|
+| <img src="design/Water Remind/47_Dark_water tracker.png" width="220"/> | <img src="design/LiveTracking/30_Light_track.png" width="220"/> |
+
+</div>
+
 ## Project Structure
 
 ```
@@ -104,7 +161,7 @@ Each feature folder (`home`, `history`, `streak`, `goals`, `settings`, `export`)
 
 ### Setup
 
-1. Clone the repository:
+1. For the Cloning of the repository:
    ```
    git clone https://github.com/Abdullah-819/Fitness-App-Flutter.git
    ```
@@ -123,13 +180,7 @@ Each feature folder (`home`, `history`, `streak`, `goals`, `settings`, `export`)
 
 ## Team Collaboration
 
-This project is developed by a team of three, each working on a dedicated branch:
-
-- **FullStack/Abdullah-Rana** - Full-stack development, primarily focused on the backend/data layer (`lib/core/services`, `lib/data`, `lib/core/di`)
-- **FrontEnd/Ahmad-Ali** - Frontend feature development (`lib/features`, UI screens and widgets)
-- **Database/Abdullah-Qureshi** - Local database and persistence layer (`lib/data/local`, `lib/data/repositories`)
-
-Feature folders under `lib/features/` are structured so each contributor can work independently within their own `presentation/` and `providers/` subfolders without conflicting with the data layer.
+Each team member works on a dedicated branch aligned with their role (see the Team section above). Feature folders under `lib/features/` are structured so each contributor can work independently within their own `presentation/` and `providers/` subfolders without conflicting with the data layer. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full branching and commit workflow.
 
 ## Release Builds
 

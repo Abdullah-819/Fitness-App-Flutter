@@ -5,9 +5,9 @@ This document describes how the team works on this project.
 ## Branches
 
 - `main` - Stable, integration branch. Only merged into, never committed to directly.
-- `FullStack/Abdullah-Rana` - Full-stack development, primarily backend/data layer (`lib/core`, `lib/data`).
+- `FullStack/Abdullah-Rana` - Full-stack engineering, primarily backend/data layer (`lib/core`, `lib/data`).
 - `FrontEnd/Ahmad-Ali` - Frontend feature development (`lib/features`, UI screens and widgets).
-- `Database/Abdullah-Qureshi` - Local database and persistence layer (`lib/data/local`, `lib/data/repositories`).
+- `FrontEnd/Abdullah-Qureshi` - Frontend feature development alongside Ahmad Ali (`lib/features`, UI screens and widgets).
 
 ## Workflow
 
@@ -52,9 +52,8 @@ This document describes how the team works on this project.
 
 To avoid merge conflicts, stay within your area unless coordinating with the owner:
 
-- `lib/core/services`, `lib/data/models`, `lib/data/repositories`, `lib/core/di` - backend/data layer
-- `lib/data/local` - local persistence implementation
-- `lib/features/**/presentation`, `lib/features/**/providers`, `lib/widgets` - frontend/UI
+- `lib/core/services`, `lib/data/models`, `lib/data/repositories`, `lib/data/local`, `lib/core/di` - backend/data layer (Abdullah Rana)
+- `lib/features/**/presentation`, `lib/features/**/providers`, `lib/widgets` - frontend/UI (Ahmad Ali and Abdullah Qureshi)
 
 If a change requires touching another person's area, coordinate with them first.
 
