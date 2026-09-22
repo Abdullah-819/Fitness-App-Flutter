@@ -107,9 +107,7 @@ class _SplashScreenState extends State<SplashScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Overlapping shoeprints silhouette icon
-                          const FootprintsIcon(
-                            size: 108,
-                          ),
+                          const FootprintsIcon(size: 108),
                           const SizedBox(height: 28),
                           // TrackFit Brand Title
                           Image.asset(

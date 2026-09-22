@@ -116,40 +116,44 @@ Static exports of the UI/UX designs (screens, states, and flows) are kept in the
 
 ## Project Structure
 
-```
-lib/
-  core/
-    constants/        Application-wide constant values
-    theme/             App theming and styling
-    utils/             Shared utility/helper functions
-    services/          Sensor, notification, and other platform services
-    di/                Service locator / dependency wiring for repositories
-    router/            App routing and navigation configuration
-  data/
-    models/            Data models (step entries, goals, streaks)
-    repositories/       Data access layer (interfaces and implementations)
-    local/             Local persistence implementation
-  features/
-    home/              Home dashboard with live step count and progress ring
-      presentation/     Screens and widgets
-      providers/        Feature-level state management (Provider)
-    history/           Historical step data views
-    streak/            Streak tracking logic and UI
-    goals/             Daily goal configuration
-    settings/          App settings and preferences
-    export/            Data export and sharing
-  widgets/             Shared, reusable UI components
-assets/
-  images/              Image assets
-  icons/               Icon assets
-test/
-  core/                Unit tests mirroring lib/core
-  data/                Unit tests mirroring lib/data
-  features/            Widget/unit tests mirroring lib/features
-releases/               Local build outputs (APKs), not committed to git
+```text
+Fitness-App-Flutter/
+│
+├── assets/                          # Static media assets used by the app
+│   ├── icons/                       # Transparent icon assets (app_logo_white, app_logo_purple)
+│   └── images/                      # Screen mockups and brand artwork (footprints, TrackFit logo)
+│
+├── design/                          # Reference UI/UX screens from Figma (not used in code)
+│   ├── DashBoard/
+│   ├── On-Boardings/
+│   └── ...
+│
+├── lib/                             # All Flutter Dart source code
+│   │
+│   ├── main.dart                    # App entry point (launches SplashScreen & initial routes)
+│   │
+│   ├── core/                        # Global resources shared across the entire app
+│   │   ├── constants/               # Colors (#7F27FF), themes, and asset paths
+│   │   └── di/                      # ServiceLocator (dependency wiring for services/repos)
+│   │
+│   └── features/                    # Modular feature directories
+│       │
+│       ├── splash/                  # Splash Screen feature
+│       │   └── presentation/
+│       │       ├── screens/         # splash_screen.dart (The animated startup screen)
+│       │       └── widgets/         # fading_spinner.dart, footprints_icon.dart
+│       │
+│       └── onboarding/              # Onboarding & Welcome feature
+│           └── presentation/
+│               └── screens/         # welcome_screen.dart ("Let's Get Started!")
+│
+├── test/                            # Automated widget and unit tests
+│   └── features/splash/             # splash_screen_test.dart
+│
+└── pubspec.yaml                     # Dependencies and registered asset paths
 ```
 
-Each feature folder (`home`, `history`, `streak`, `goals`, `settings`, `export`) contains its own `presentation/` (screens and widgets) and `providers/` (state management) subfolders, keeping feature work isolated between team members.
+Each feature folder (e.g. `splash`, `onboarding`, `home`, `history`) contains its own `presentation/` and `providers/` subfolders, keeping feature work isolated and avoiding team merge conflicts.
 
 ## Getting Started
 
