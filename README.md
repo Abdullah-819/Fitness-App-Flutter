@@ -11,10 +11,10 @@ A privacy-friendly Flutter application for Android that helps users track their 
 ### Team
 
 | <img src="https://ui-avatars.com/api/?name=Abdullah+Rana&background=1E293B&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> | <img src="https://ui-avatars.com/api/?name=Ahmad+Ali&background=0F766E&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> | <img src="https://ui-avatars.com/api/?name=Abdullah+Qureshi&background=7C2D12&color=fff&size=128&bold=true" width="90" height="90" style="border-radius:50%;"/> |
-|:---:|:---:|:---:|
-| **Abdullah Rana** | **Ahmad Ali** | **Abdullah Qureshi** |
-| Full Stack Engineer | Frontend Developer | Frontend Developer |
-| `FullStack/Abdullah-Rana` | `FrontEnd/Ahmad-Ali` | `FrontEnd/Abdullah-Qureshi` |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|                                                                      **Abdullah Rana**                                                                       |                                                                      **Ahmad Ali**                                                                       |                                                                      **Abdullah Qureshi**                                                                       |
+|                                                                     Full Stack Engineer                                                                      |                                                                    Frontend Developer                                                                    |                                                                       Frontend Developer                                                                        |
+|                                                                  `FullStack/Abdullah-Rana`                                                                   |                                                                   `FrontEnd/Ahmad-Ali`                                                                   |                                                                   `FrontEnd/Abdullah-Qureshi`                                                                   |
 
 </div>
 
@@ -104,12 +104,12 @@ Static exports of the UI/UX designs (screens, states, and flows) are kept in the
 
 <div align="center">
 
-| Login | Sign Up | Dashboard |
-|:---:|:---:|:---:|
+|                                     Login                                     |                                   Sign Up                                    |                               Dashboard                               |
+| :---------------------------------------------------------------------------: | :--------------------------------------------------------------------------: | :-------------------------------------------------------------------: |
 | <img src="design/On-Boardings/17_Light_sign in filled form.png" width="220"/> | <img src="design/On-Boardings/7_Light_sign up filled form.png" width="220"/> | <img src="design/DashBoard/25_Light_home - default.png" width="220"/> |
 
-| Water Level | Live Tracking |
-|:---:|:---:|
+|                              Water Level                               |                          Live Tracking                          |
+| :--------------------------------------------------------------------: | :-------------------------------------------------------------: |
 | <img src="design/Water Remind/47_Dark_water tracker.png" width="220"/> | <img src="design/LiveTracking/30_Light_track.png" width="220"/> |
 
 </div>
