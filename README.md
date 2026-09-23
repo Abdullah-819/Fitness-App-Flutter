@@ -136,16 +136,58 @@ Fitness-App-Flutter/
 │   │   ├── constants/               # Colors (#7F27FF), themes, and asset paths
 │   │   └── di/                      # ServiceLocator (dependency wiring for services/repos)
 │   │
-│   └── features/                    # Modular feature directories
+│   └── features/                    # Modular feature directories (one folder per app feature)
 │       │
 │       ├── splash/                  # Splash Screen feature
 │       │   └── presentation/
-│       │       ├── screens/         # splash_screen.dart (The animated startup screen)
+│       │       ├── screens/         # splash_screen.dart (the animated startup screen)
 │       │       └── widgets/         # fading_spinner.dart, footprints_icon.dart
 │       │
-│       └── onboarding/              # Onboarding & Welcome feature
-│           └── presentation/
-│               └── screens/         # welcome_screen.dart ("Let's Get Started!")
+│       ├── onboarding/               # Onboarding & Welcome feature
+│       │   └── presentation/
+│       │       └── screens/         # welcome_screen.dart ("Let's Get Started!")
+│       │
+│       ├── auth/                    # Sign-in / authentication feature
+│       │   ├── data/                # auth_service.dart (auth data access)
+│       │   ├── domain/
+│       │   │   └── models/          # user_model.dart
+│       │   └── presentation/
+│       │       ├── screens/         # sign_in_screen.dart
+│       │       └── widgets/         # custom_text_field.dart, social_sign_in_button.dart, etc.
+│       │
+│       ├── home/                    # Home dashboard feature
+│       │   ├── presentation/
+│       │   │   ├── screens/         # home_screen.dart
+│       │   │   └── widgets/         # home-specific widgets (progress ring, etc.)
+│       │   └── providers/           # Home screen state management
+│       │
+│       ├── goals/                   # Daily step goal configuration feature (scaffolded)
+│       │   ├── presentation/
+│       │   │   ├── screens/
+│       │   │   └── widgets/
+│       │   └── providers/
+│       │
+│       ├── history/                 # Historical step log feature (scaffolded)
+│       │   ├── presentation/
+│       │   │   ├── screens/
+│       │   │   └── widgets/
+│       │   └── providers/
+│       │
+│       ├── streak/                  # Consecutive goal streak tracking feature (scaffolded)
+│       │   ├── presentation/
+│       │   │   ├── screens/
+│       │   │   └── widgets/
+│       │   └── providers/
+│       │
+│       ├── settings/                # App settings feature (scaffolded)
+│       │   ├── presentation/
+│       │   │   ├── screens/
+│       │   │   └── widgets/
+│       │   └── providers/
+│       │
+│       └── export/                  # Data export/sharing feature (scaffolded)
+│           ├── presentation/
+│           └── providers/
 │
 ├── test/                            # Automated widget and unit tests
 │   └── features/splash/             # splash_screen_test.dart
@@ -153,7 +195,7 @@ Fitness-App-Flutter/
 └── pubspec.yaml                     # Dependencies and registered asset paths
 ```
 
-Each feature folder (e.g. `splash`, `onboarding`, `home`, `history`) contains its own `presentation/` and `providers/` subfolders, keeping feature work isolated and avoiding team merge conflicts.
+Every feature folder under `lib/features/` follows the same shape — `presentation/screens`, `presentation/widgets`, and `providers/` (plus `data/`/`domain/` where a feature owns its own data access, as in `auth/`) — so once you know one feature, you know them all. Folders marked "scaffolded" above (`goals`, `history`, `streak`, `settings`, `export`) are already created and tracked in git (via `.gitkeep`) as the intended home for upcoming feature work, keeping the target structure visible to the whole team even before the code inside them is written.
 
 ## Getting Started
 
