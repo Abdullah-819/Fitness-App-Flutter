@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../auth/presentation/screens/sign_in_screen.dart';
+import '../../../auth/presentation/widgets/social_logos.dart';
+import '../../../auth/presentation/widgets/social_sign_in_button.dart';
 import '../../../splash/presentation/widgets/footprints_icon.dart';
 
 /// Welcome / Onboarding landing screen following design 5_Light_welcome screen.png.
@@ -56,31 +58,27 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 36),
 
-              // Social Auth Buttons
-              _SocialAuthButton(
-                icon: Icons.g_mobiledata_rounded,
-                iconColor: Colors.red,
+              // Social Auth Buttons with authentic logos and identical alignment
+              SocialSignInButton(
+                icon: const GoogleLogo(size: 24),
                 label: 'Continue with Google',
                 onPressed: () {},
               ),
               const SizedBox(height: 14),
-              _SocialAuthButton(
-                icon: Icons.apple,
-                iconColor: Colors.black,
+              SocialSignInButton(
+                icon: const AppleLogo(size: 24),
                 label: 'Continue with Apple',
                 onPressed: () {},
               ),
               const SizedBox(height: 14),
-              _SocialAuthButton(
-                icon: Icons.facebook,
-                iconColor: const Color(0xFF1877F2),
+              SocialSignInButton(
+                icon: const FacebookLogo(size: 24),
                 label: 'Continue with Facebook',
                 onPressed: () {},
               ),
               const SizedBox(height: 14),
-              _SocialAuthButton(
-                icon: Icons.alternate_email,
-                iconColor: const Color(0xFF1DA1F2),
+              SocialSignInButton(
+                icon: const TwitterLogo(size: 24),
                 label: 'Continue with Twitter',
                 onPressed: () {},
               ),
@@ -146,54 +144,6 @@ class WelcomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SocialAuthButton extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-  final VoidCallback onPressed;
-
-  const _SocialAuthButton({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: Colors.grey.shade300, width: 1.2),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          foregroundColor: const Color(0xFF1E1E2D),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: iconColor, size: 24),
-            const SizedBox(width: 12),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
         ),
       ),
     );

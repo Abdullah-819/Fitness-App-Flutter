@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../home/presentation/screens/home_screen.dart';
@@ -44,24 +45,136 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  /// Automatically fills the default demo user credentials
+  /// Displays modal bottom sheet to pick from the 3 team members
+  void _showTeamMemberPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bottomSheetContext) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Select Team Account',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Tap any member to auto-fill credentials & sign in directly.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...AuthService.teamMembers.map((member) {
+                  return Card(
+                    elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    color: const Color(0xFFF9FAFB),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: CircleAvatar(
+                        radius: 22,
+                        backgroundColor: AppColors.primaryPurple,
+                        child: Text(
+                          member.initials,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        member.name,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${member.role} • pass: ${member.password}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.login_rounded,
+                        size: 20,
+                        color: AppColors.primaryPurple,
+                      ),
+                      onTap: () {
+                        Navigator.pop(bottomSheetContext);
+                        _selectMemberAndSignIn(member);
+                      },
+                    ),
+                  );
+                }),
+                const SizedBox(height: 6),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Alias for backward compatibility and AppBar options
   void _fillDefaultUser() {
+    _showTeamMemberPicker();
+  }
+
+  /// Automatically fills selected member credentials and triggers sign-in
+  void _selectMemberAndSignIn(TeamMemberCredentials member) {
     setState(() {
-      _emailController.text = AuthService.defaultEmail;
-      _passwordController.text = AuthService.defaultPassword;
+      _emailController.text = member.email;
+      _passwordController.text = member.password;
       _rememberMe = true;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-            SizedBox(width: 10),
+            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Default credentials filled (${AuthService.defaultEmail})',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                'Logging in as ${member.name}...',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -72,6 +185,9 @@ class _SignInScreenState extends State<SignInScreen> {
         duration: const Duration(seconds: 2),
       ),
     );
+
+    // Automatically execute sign-in
+    _handleSignIn();
   }
 
   /// Executes sign-in with loading modal matching 18_Light_sign in loading.png
@@ -240,33 +356,33 @@ class _SignInScreenState extends State<SignInScreen> {
 
                 const SizedBox(height: 16),
 
-                // Helper banner to easily test default user
+                // Helper banner to select team account
                 GestureDetector(
-                  onTap: _fillDefaultUser,
+                  onTap: _showTeamMemberPicker,
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
-                      vertical: 10,
+                      vertical: 11,
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryPurple.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.primaryPurple.withValues(alpha: 0.2),
+                        color: AppColors.primaryPurple.withValues(alpha: 0.25),
                       ),
                     ),
                     child: const Row(
                       children: [
                         Icon(
-                          Icons.touch_app_outlined,
+                          LucideIcons.users,
                           size: 18,
                           color: AppColors.primaryPurple,
                         ),
-                        SizedBox(width: 8),
+                        SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Tap to fill default credentials (Andrew Ainsley)',
+                            'Tap to auto-fill team credentials (Abdullah Rana, Ahmad Ali, Abdullah Qureshi)',
                             style: TextStyle(
                               fontSize: 12.5,
                               color: AppColors.primaryPurple,
@@ -274,30 +390,34 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                           ),
                         ),
+                        Icon(
+                          LucideIcons.chevronDown,
+                          size: 18,
+                          color: AppColors.primaryPurple,
+                        ),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 22),
 
-                // Email Input Field (with left side mail icon & right side clear icon)
+                // Email Input Field (with left Lucide mail icon & right Lucide clear icon)
                 CustomTextField(
                   label: 'Email',
                   hintText: 'Email',
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const AuthMailIcon(
-                    size: 22,
-                    color: AppColors.textLight,
-                  ),
+                  prefixIcon: const AuthMailIcon(size: 20),
                   suffixIcon: _emailController.text.isNotEmpty
                       ? IconButton(
                           icon: const Icon(
-                            Icons.cancel_rounded,
+                            LucideIcons.circleX,
                             size: 18,
                             color: AppColors.textLight,
                           ),
+                          splashRadius: 18,
+                          tooltip: 'Clear email',
                           onPressed: () {
                             _emailController.clear();
                           },
@@ -314,9 +434,9 @@ class _SignInScreenState extends State<SignInScreen> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // Password Input Field (with left side lock icon & right side eye toggle)
+                // Password Input Field (with left Lucide lock icon & right Lucide eye toggle)
                 CustomTextField(
                   label: 'Password',
                   hintText: 'Password',
@@ -324,16 +444,17 @@ class _SignInScreenState extends State<SignInScreen> {
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _handleSignIn(),
-                  prefixIcon: const AuthLockIcon(
-                    size: 22,
-                    color: AppColors.textLight,
-                  ),
+                  prefixIcon: const AuthLockIcon(size: 20),
                   suffixIcon: IconButton(
                     icon: AuthEyeIcon(
                       isObscured: _obscurePassword,
-                      size: 22,
-                      color: AppColors.textLight,
+                      size: 20,
+                      color: _obscurePassword
+                          ? AppColors.textLight
+                          : AppColors.primaryPurple,
                     ),
+                    splashRadius: 18,
+                    tooltip: _obscurePassword ? 'Show password' : 'Hide password',
                     onPressed: () {
                       setState(() {
                         _obscurePassword = !_obscurePassword;
@@ -348,11 +469,12 @@ class _SignInScreenState extends State<SignInScreen> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // Remember me & Forgot Password Row
+                // Remember me & Forgot Password Row (equal flex, aligned height & padding)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Remember me checkbox
                     Flexible(
@@ -365,44 +487,61 @@ class _SignInScreenState extends State<SignInScreen> {
                         borderRadius: BorderRadius.circular(8),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                            vertical: 4,
+                            vertical: 6,
                             horizontal: 2,
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                width: 22,
-                                height: 22,
+                                duration: const Duration(milliseconds: 180),
+                                curve: Curves.easeInOut,
+                                width: 20,
+                                height: 20,
                                 decoration: BoxDecoration(
                                   color: _rememberMe
                                       ? AppColors.primaryPurple
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(7),
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: AppColors.primaryPurple,
-                                    width: 2,
+                                    color: _rememberMe
+                                        ? AppColors.primaryPurple
+                                        : const Color(0xFFD1D5DB),
+                                    width: 1.8,
                                   ),
+                                  boxShadow: _rememberMe
+                                      ? [
+                                          BoxShadow(
+                                            color: AppColors.primaryPurple
+                                                .withValues(alpha: 0.25),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : null,
                                 ),
                                 child: _rememberMe
-                                    ? const Icon(
-                                        Icons.check,
-                                        size: 16,
-                                        color: Colors.white,
+                                    ? const Center(
+                                        child: Icon(
+                                          LucideIcons.check,
+                                          size: 13,
+                                          color: Colors.white,
+                                        ),
                                       )
                                     : null,
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 9),
                               const Flexible(
                                 child: Text(
                                   'Remember me',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
                                     color: AppColors.textPrimary,
+                                    letterSpacing: -0.1,
                                   ),
                                 ),
                               ),
@@ -428,7 +567,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         );
                       },
                       style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -436,8 +578,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         'Forgot Password?',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.primaryPurple,
+                          letterSpacing: -0.1,
                         ),
                       ),
                     ),
@@ -479,7 +622,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                 // Social Auth Buttons with authentic logos
                 SocialSignInButton(
-                  icon: const GoogleLogo(size: 22),
+                  icon: const GoogleLogo(size: 24),
                   label: 'Continue with Google',
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -505,7 +648,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 const SizedBox(height: 14),
                 SocialSignInButton(
-                  icon: const FacebookLogo(size: 22),
+                  icon: const FacebookLogo(size: 24),
                   label: 'Continue with Facebook',
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(

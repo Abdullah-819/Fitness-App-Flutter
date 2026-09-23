@@ -51,7 +51,7 @@ class StreakModel {
     );
   }
 
-  /// Convert to Map for Firestore / JSON.
+  /// Convert to Map for JSON / local persistence.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -63,7 +63,7 @@ class StreakModel {
     };
   }
 
-  /// Reconstruct from Firestore document map or JSON.
+  /// Reconstruct from Map or JSON.
   factory StreakModel.fromMap(Map<String, dynamic> map) {
     return StreakModel(
       id: (map['id'] as String?) ?? 'streak_tracker',

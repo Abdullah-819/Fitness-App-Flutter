@@ -51,7 +51,7 @@ class GoalModel {
     );
   }
 
-  /// Convert to Map for Firestore / JSON.
+  /// Convert to Map for JSON / local persistence.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -63,7 +63,7 @@ class GoalModel {
     };
   }
 
-  /// Reconstruct from Firestore document map or JSON.
+  /// Reconstruct from Map or JSON.
   factory GoalModel.fromMap(Map<String, dynamic> map) {
     return GoalModel(
       id: (map['id'] as String?) ?? 'default_goal',

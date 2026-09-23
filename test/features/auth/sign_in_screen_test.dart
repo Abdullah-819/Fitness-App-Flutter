@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:step_counter/features/auth/data/auth_service.dart';
 import 'package:step_counter/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:step_counter/features/auth/presentation/widgets/auth_form_icons.dart';
@@ -15,10 +16,21 @@ void main() {
       expect(user.name, AuthService.defaultName);
     });
 
+    test('Team members log in successfully with password 696969', () async {
+      for (final member in AuthService.teamMembers) {
+        final user = await AuthService.instance.signIn(
+          email: member.email,
+          password: '696969',
+        );
+        expect(user.name, equals(member.name));
+        expect(user.email, equals(member.email));
+      }
+    });
+
     test('Invalid password throws AuthException', () async {
       expect(
         () => AuthService.instance.signIn(
-          email: AuthService.defaultEmail,
+          email: 'abdullah.rana@trackfit.com',
           password: 'wrong_password',
         ),
         throwsA(isA<AuthException>()),
@@ -63,25 +75,35 @@ void main() {
       expect(find.widgetWithText(ElevatedButton, 'Sign in'), findsOneWidget);
     });
 
-    testWidgets('Tapping auto-fill banner populates credentials and shows clear side icon', (tester) async {
+    testWidgets('Tapping auto-fill banner shows 3 team options and selecting one auto-fills', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: SignInScreen(),
         ),
       );
 
-      // Tap auto-fill
-      final fillBanner = find.textContaining('Tap to fill default credentials');
+      // Tap auto-fill banner
+      final fillBanner = find.textContaining('Tap to auto-fill team credentials');
       expect(fillBanner, findsOneWidget);
       await tester.tap(fillBanner);
       await tester.pumpAndSettle();
 
-      // Check fields are populated
-      expect(find.text(AuthService.defaultEmail), findsOneWidget);
-      expect(find.text(AuthService.defaultPassword), findsOneWidget);
+      // Bottom sheet should display all 3 team members
+      expect(find.text('Select Team Account'), findsOneWidget);
+      expect(find.text('Abdullah Rana'), findsOneWidget);
+      expect(find.text('Ahmad Ali'), findsOneWidget);
+      expect(find.text('Abdullah Qureshi'), findsOneWidget);
 
-      // Email clear side icon appears when text is present
-      expect(find.byIcon(Icons.cancel_rounded), findsOneWidget);
+      // Tap on Abdullah Rana
+      await tester.tap(find.text('Abdullah Rana'));
+      await tester.pump();
+
+      // Check fields are populated with Abdullah Rana's credentials
+      expect(find.text('abdullah.rana@trackfit.com'), findsOneWidget);
+      expect(find.text('696969'), findsOneWidget);
+
+      // Settle loading dialog and navigation
+      await tester.pumpAndSettle();
     });
 
     testWidgets('Remember me checkbox toggles state', (tester) async {
@@ -92,14 +114,14 @@ void main() {
       );
 
       final rememberMeText = find.text('Remember me');
-      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(LucideIcons.check), findsNothing);
 
       // Tap Remember me
       await tester.tap(rememberMeText);
       await tester.pumpAndSettle();
 
       // Should show check icon
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(LucideIcons.check), findsOneWidget);
     });
 
     testWidgets('Toggling eye icon updates obscureText state', (tester) async {
