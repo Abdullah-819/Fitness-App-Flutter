@@ -44,24 +44,136 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  /// Automatically fills the default demo user credentials
+  /// Displays modal bottom sheet to pick from the 3 team members
+  void _showTeamMemberPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bottomSheetContext) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Select Team Account',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Tap any member to auto-fill credentials & sign in directly.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...AuthService.teamMembers.map((member) {
+                  return Card(
+                    elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    color: const Color(0xFFF9FAFB),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: CircleAvatar(
+                        radius: 22,
+                        backgroundColor: AppColors.primaryPurple,
+                        child: Text(
+                          member.initials,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        member.name,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${member.role} • pass: ${member.password}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.login_rounded,
+                        size: 20,
+                        color: AppColors.primaryPurple,
+                      ),
+                      onTap: () {
+                        Navigator.pop(bottomSheetContext);
+                        _selectMemberAndSignIn(member);
+                      },
+                    ),
+                  );
+                }),
+                const SizedBox(height: 6),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Alias for backward compatibility and AppBar options
   void _fillDefaultUser() {
+    _showTeamMemberPicker();
+  }
+
+  /// Automatically fills selected member credentials and triggers sign-in
+  void _selectMemberAndSignIn(TeamMemberCredentials member) {
     setState(() {
-      _emailController.text = AuthService.defaultEmail;
-      _passwordController.text = AuthService.defaultPassword;
+      _emailController.text = member.email;
+      _passwordController.text = member.password;
       _rememberMe = true;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-            SizedBox(width: 10),
+            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Default credentials filled (${AuthService.defaultEmail})',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                'Logging in as ${member.name}...',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -72,6 +184,9 @@ class _SignInScreenState extends State<SignInScreen> {
         duration: const Duration(seconds: 2),
       ),
     );
+
+    // Automatically execute sign-in
+    _handleSignIn();
   }
 
   /// Executes sign-in with loading modal matching 18_Light_sign in loading.png
@@ -240,39 +355,44 @@ class _SignInScreenState extends State<SignInScreen> {
 
                 const SizedBox(height: 16),
 
-                // Helper banner to easily test default user
+                // Helper banner to select team account
                 GestureDetector(
-                  onTap: _fillDefaultUser,
+                  onTap: _showTeamMemberPicker,
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
-                      vertical: 10,
+                      vertical: 11,
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryPurple.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.primaryPurple.withValues(alpha: 0.2),
+                        color: AppColors.primaryPurple.withValues(alpha: 0.25),
                       ),
                     ),
                     child: const Row(
                       children: [
                         Icon(
-                          Icons.touch_app_outlined,
-                          size: 18,
+                          Icons.group_rounded,
+                          size: 20,
                           color: AppColors.primaryPurple,
                         ),
-                        SizedBox(width: 8),
+                        SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Tap to fill default credentials (Andrew Ainsley)',
+                            'Tap to auto-fill team credentials (Abdullah Rana, Ahmad Ali, Abdullah Qureshi)',
                             style: TextStyle(
                               fontSize: 12.5,
                               color: AppColors.primaryPurple,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 20,
+                          color: AppColors.primaryPurple,
                         ),
                       ],
                     ),
