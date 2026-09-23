@@ -56,7 +56,7 @@ class StepRecordModel {
     );
   }
 
-  /// Convert to a map for Cloud Firestore synchronization and JSON serialization.
+  /// Convert to a map for JSON serialization and local persistence.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -69,7 +69,7 @@ class StepRecordModel {
     };
   }
 
-  /// Reconstruct from Firestore document map or JSON.
+  /// Reconstruct from Map or JSON.
   factory StepRecordModel.fromMap(Map<String, dynamic> map) {
     return StepRecordModel(
       id: (map['id'] as String?) ?? '',

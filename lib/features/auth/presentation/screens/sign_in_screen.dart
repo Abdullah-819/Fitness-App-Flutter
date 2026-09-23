@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../home/presentation/screens/home_screen.dart';
@@ -374,8 +375,8 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: const Row(
                       children: [
                         Icon(
-                          Icons.group_rounded,
-                          size: 20,
+                          LucideIcons.users,
+                          size: 18,
                           color: AppColors.primaryPurple,
                         ),
                         SizedBox(width: 10),
@@ -390,8 +391,8 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                         ),
                         Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          size: 20,
+                          LucideIcons.chevronDown,
+                          size: 18,
                           color: AppColors.primaryPurple,
                         ),
                       ],
@@ -399,25 +400,24 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 22),
 
-                // Email Input Field (with left side mail icon & right side clear icon)
+                // Email Input Field (with left Lucide mail icon & right Lucide clear icon)
                 CustomTextField(
                   label: 'Email',
                   hintText: 'Email',
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const AuthMailIcon(
-                    size: 22,
-                    color: AppColors.textLight,
-                  ),
+                  prefixIcon: const AuthMailIcon(size: 20),
                   suffixIcon: _emailController.text.isNotEmpty
                       ? IconButton(
                           icon: const Icon(
-                            Icons.cancel_rounded,
+                            LucideIcons.circleX,
                             size: 18,
                             color: AppColors.textLight,
                           ),
+                          splashRadius: 18,
+                          tooltip: 'Clear email',
                           onPressed: () {
                             _emailController.clear();
                           },
@@ -434,9 +434,9 @@ class _SignInScreenState extends State<SignInScreen> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // Password Input Field (with left side lock icon & right side eye toggle)
+                // Password Input Field (with left Lucide lock icon & right Lucide eye toggle)
                 CustomTextField(
                   label: 'Password',
                   hintText: 'Password',
@@ -444,16 +444,17 @@ class _SignInScreenState extends State<SignInScreen> {
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _handleSignIn(),
-                  prefixIcon: const AuthLockIcon(
-                    size: 22,
-                    color: AppColors.textLight,
-                  ),
+                  prefixIcon: const AuthLockIcon(size: 20),
                   suffixIcon: IconButton(
                     icon: AuthEyeIcon(
                       isObscured: _obscurePassword,
-                      size: 22,
-                      color: AppColors.textLight,
+                      size: 20,
+                      color: _obscurePassword
+                          ? AppColors.textLight
+                          : AppColors.primaryPurple,
                     ),
+                    splashRadius: 18,
+                    tooltip: _obscurePassword ? 'Show password' : 'Hide password',
                     onPressed: () {
                       setState(() {
                         _obscurePassword = !_obscurePassword;
@@ -468,11 +469,12 @@ class _SignInScreenState extends State<SignInScreen> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // Remember me & Forgot Password Row
+                // Remember me & Forgot Password Row (equal flex, aligned height & padding)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Remember me checkbox
                     Flexible(
@@ -485,44 +487,61 @@ class _SignInScreenState extends State<SignInScreen> {
                         borderRadius: BorderRadius.circular(8),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                            vertical: 4,
+                            vertical: 6,
                             horizontal: 2,
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                width: 22,
-                                height: 22,
+                                duration: const Duration(milliseconds: 180),
+                                curve: Curves.easeInOut,
+                                width: 20,
+                                height: 20,
                                 decoration: BoxDecoration(
                                   color: _rememberMe
                                       ? AppColors.primaryPurple
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(7),
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: AppColors.primaryPurple,
-                                    width: 2,
+                                    color: _rememberMe
+                                        ? AppColors.primaryPurple
+                                        : const Color(0xFFD1D5DB),
+                                    width: 1.8,
                                   ),
+                                  boxShadow: _rememberMe
+                                      ? [
+                                          BoxShadow(
+                                            color: AppColors.primaryPurple
+                                                .withValues(alpha: 0.25),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : null,
                                 ),
                                 child: _rememberMe
-                                    ? const Icon(
-                                        Icons.check,
-                                        size: 16,
-                                        color: Colors.white,
+                                    ? const Center(
+                                        child: Icon(
+                                          LucideIcons.check,
+                                          size: 13,
+                                          color: Colors.white,
+                                        ),
                                       )
                                     : null,
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 9),
                               const Flexible(
                                 child: Text(
                                   'Remember me',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
                                     color: AppColors.textPrimary,
+                                    letterSpacing: -0.1,
                                   ),
                                 ),
                               ),
@@ -548,7 +567,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         );
                       },
                       style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -556,8 +578,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         'Forgot Password?',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.primaryPurple,
+                          letterSpacing: -0.1,
                         ),
                       ),
                     ),

@@ -94,7 +94,7 @@ class DailyHistoryModel {
     );
   }
 
-  /// Convert to Map for Firestore / JSON / CSV.
+  /// Convert to Map for JSON / CSV / local persistence.
   Map<String, dynamic> toMap() {
     return {
       'dateString': dateString,
@@ -108,7 +108,7 @@ class DailyHistoryModel {
     };
   }
 
-  /// Reconstruct from Firestore document map or JSON.
+  /// Reconstruct from Map or JSON.
   factory DailyHistoryModel.fromMap(Map<String, dynamic> map) {
     final steps = (map['steps'] as num?)?.toInt() ?? 0;
     final goal = (map['goal'] as num?)?.toInt() ?? 6000;

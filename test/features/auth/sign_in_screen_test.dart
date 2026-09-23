@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:step_counter/features/auth/data/auth_service.dart';
 import 'package:step_counter/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:step_counter/features/auth/presentation/widgets/auth_form_icons.dart';
@@ -113,14 +114,14 @@ void main() {
       );
 
       final rememberMeText = find.text('Remember me');
-      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(LucideIcons.check), findsNothing);
 
       // Tap Remember me
       await tester.tap(rememberMeText);
       await tester.pumpAndSettle();
 
       // Should show check icon
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(LucideIcons.check), findsOneWidget);
     });
 
     testWidgets('Toggling eye icon updates obscureText state', (tester) async {
