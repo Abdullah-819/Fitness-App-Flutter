@@ -622,7 +622,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                 // Social Auth Buttons with authentic logos
                 SocialSignInButton(
-                  icon: const GoogleLogo(size: 22),
+                  icon: const GoogleLogo(size: 24),
                   label: 'Continue with Google',
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -648,7 +648,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 const SizedBox(height: 14),
                 SocialSignInButton(
-                  icon: const FacebookLogo(size: 22),
+                  icon: const FacebookLogo(size: 24),
                   label: 'Continue with Facebook',
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(

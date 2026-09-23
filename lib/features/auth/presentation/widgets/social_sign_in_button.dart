@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
-/// Pill-shaped social authentication button matching the design mockup.
+/// Pill-shaped social authentication button with strictly aligned leading icon
+/// and centered label, guaranteeing identical alignment and equal sizings.
 class SocialSignInButton extends StatelessWidget {
   final Widget icon;
   final String label;
@@ -28,22 +29,32 @@ class SocialSignInButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
           ),
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.zero,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            icon,
-            const SizedBox(width: 14),
-            Flexible(
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 24),
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Center(child: icon),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 56),
               child: Text(
                 label,
+                textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                   letterSpacing: -0.2,
                 ),
