@@ -355,52 +355,59 @@ class _SignInScreenState extends State<SignInScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Remember me checkbox
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          _rememberMe = !_rememberMe;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 2,
-                        ),
-                        child: Row(
-                          children: [
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                color: _rememberMe
-                                    ? AppColors.primaryPurple
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(7),
-                                border: Border.all(
-                                  color: AppColors.primaryPurple,
-                                  width: 2,
+                    Flexible(
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            _rememberMe = !_rememberMe;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 2,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: _rememberMe
+                                      ? AppColors.primaryPurple
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(7),
+                                  border: Border.all(
+                                    color: AppColors.primaryPurple,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: _rememberMe
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: Colors.white,
+                                      )
+                                    : null,
+                              ),
+                              const SizedBox(width: 10),
+                              const Flexible(
+                                child: Text(
+                                  'Remember me',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                               ),
-                              child: _rememberMe
-                                  ? const Icon(
-                                      Icons.check,
-                                      size: 16,
-                                      color: Colors.white,
-                                    )
-                                  : null,
-                            ),
-                            const SizedBox(width: 10),
-                            const Text(
-                              'Remember me',
-                              style: TextStyle(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

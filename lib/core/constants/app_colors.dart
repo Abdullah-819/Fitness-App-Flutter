@@ -21,6 +21,12 @@ class AppColors {
   static const Color textSecondary = Color(0xFF71727A);
   static const Color textLight = Color(0xFF8F9098);
 
+  /// Button / Pill background light purple
+  static const Color lightPurpleBg = Color(0xFFF5EEFF);
+
+  /// Inactive dot indicator
+  static const Color indicatorInactive = Color(0xFFEDECED);
+
   /// Input field background fill
   static const Color fieldFill = Color(0xFFF7F8F9);
 

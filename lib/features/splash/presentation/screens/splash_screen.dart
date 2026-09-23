@@ -107,8 +107,8 @@ class _SplashScreenState extends State<SplashScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Overlapping shoeprints silhouette icon
-                          const FootprintsIcon(size: 108),
-                          const SizedBox(height: 28),
+                          const FootprintsIcon(size: 126),
+                          const SizedBox(height: 48),
                           // TrackFit Brand Title
                           Image.asset(
                             'assets/images/trackfit_text_transparent.png',
@@ -135,11 +135,11 @@ class _SplashScreenState extends State<SplashScreen>
                 const Spacer(flex: 6),
                 // Bottom animated loading spinner
                 const FadingSpinner(
-                  size: 58,
-                  strokeWidth: 7.0,
+                  size: 76,
+                  strokeWidth: 9.0,
                   color: AppColors.white,
                 ),
-                const SizedBox(height: 58),
+                const SizedBox(height: 64),
               ],
             ),
           ),
