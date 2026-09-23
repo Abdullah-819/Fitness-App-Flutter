@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../auth/presentation/screens/sign_in_screen.dart';
 import '../../../splash/presentation/widgets/footprints_icon.dart';
 
 /// Welcome / Onboarding landing screen following design 5_Light_welcome screen.png.
@@ -113,7 +114,13 @@ class WelcomeScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const SignInScreen(),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF3E8FF),
                     foregroundColor: AppColors.primaryPurple,

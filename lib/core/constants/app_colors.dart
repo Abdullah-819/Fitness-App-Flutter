@@ -15,4 +15,16 @@ class AppColors {
 
   /// Subtle text / faded elements
   static const Color textMuted = Color(0xCCFFFFFF);
+
+  /// Text colors for light screens
+  static const Color textPrimary = Color(0xFF1E1E2D);
+  static const Color textSecondary = Color(0xFF71727A);
+  static const Color textLight = Color(0xFF8F9098);
+
+  /// Input field background fill
+  static const Color fieldFill = Color(0xFFF7F8F9);
+
+  /// Border and divider lines
+  static const Color borderLight = Color(0xFFE4E6EA);
+  static const Color dividerColor = Color(0xFFEDEEF2);
 }
