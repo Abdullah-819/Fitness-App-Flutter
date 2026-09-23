@@ -181,12 +181,17 @@ class _SocialAuthButton extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: iconColor, size: 24),
             const SizedBox(width: 12),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ),
