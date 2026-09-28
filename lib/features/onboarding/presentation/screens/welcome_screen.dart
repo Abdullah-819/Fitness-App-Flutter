@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../auth/presentation/screens/sign_in_screen.dart';
+import '../../../auth/presentation/screens/sign_up_screen.dart';
 import '../../../auth/presentation/widgets/social_logos.dart';
 import '../../../auth/presentation/widgets/social_sign_in_button.dart';
 import '../../../splash/presentation/widgets/footprints_icon.dart';
@@ -90,7 +91,13 @@ class WelcomeScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const SignUpScreen(),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryPurple,
                     foregroundColor: Colors.white,
