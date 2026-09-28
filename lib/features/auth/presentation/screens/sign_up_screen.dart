@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../home/presentation/screens/home_screen.dart';
+import '../../../onboarding/presentation/screens/sign_up_steps_screen.dart';
 import '../../../onboarding/presentation/screens/welcome_screen.dart';
 import '../../data/auth_service.dart';
 import '../widgets/auth_form_icons.dart';
@@ -381,11 +381,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       // Dismiss loading modal
       SignInLoadingDialog.hide(context);
 
-      // Navigate to Home / User Dashboard
+      // Navigate to Sign Up Steps Onboarding (Step 1 to 6)
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              HomeScreen(user: user),
+              SignUpStepsScreen(user: user),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
