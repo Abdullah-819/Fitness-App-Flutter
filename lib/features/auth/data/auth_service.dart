@@ -132,8 +132,58 @@ class AuthService {
     );
   }
 
+  /// Sign up / register a new user with email and password.
+  /// Throws [AuthException] on invalid input.
+  Future<UserModel> signUp({
+    required String email,
+    required String password,
+    String? name,
+  }) async {
+    // Simulate network delay to match design 8_Light_sign up loading.png
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    final normalizedEmail = email.trim().toLowerCase();
+    final trimmedPassword = password.trim();
+
+    if (normalizedEmail.isEmpty) {
+      throw const AuthException('Please enter your email address.');
+    }
+
+    if (!normalizedEmail.contains('@') || !normalizedEmail.contains('.')) {
+      throw const AuthException('Please enter a valid email address.');
+    }
+
+    if (trimmedPassword.isEmpty) {
+      throw const AuthException('Please enter a password.');
+    }
+
+    if (trimmedPassword.length < 6) {
+      throw const AuthException('Password must be at least 6 characters long.');
+    }
+
+    // Determine user name from email or provided name
+    final derivedName = (name != null && name.trim().isNotEmpty)
+        ? name.trim()
+        : normalizedEmail
+            .split('@')[0]
+            .replaceAll(RegExp(r'[._]'), ' ')
+            .split(' ')
+            .where((s) => s.isNotEmpty)
+            .map((s) => '${s[0].toUpperCase()}${s.substring(1)}')
+            .join(' ');
+
+    _currentUser = UserModel(
+      id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+      email: normalizedEmail,
+      name: derivedName.isNotEmpty ? derivedName : 'TrackFit User',
+    );
+
+    return _currentUser!;
+  }
+
   /// Sign out the current user
   void signOut() {
     _currentUser = null;
   }
 }
+

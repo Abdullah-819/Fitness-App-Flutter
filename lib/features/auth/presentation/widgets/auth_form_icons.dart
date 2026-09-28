@@ -66,3 +66,25 @@ class AuthEyeIcon extends StatelessWidget {
     );
   }
 }
+
+/// Clean, filled User / Silhouette icon for header matching 6_Light_sign up blank form.png.
+class AuthUserIcon extends StatelessWidget {
+  final double size;
+  final Color? color;
+
+  const AuthUserIcon({
+    super.key,
+    this.size = 28,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      Icons.person,
+      size: size,
+      color: color ?? const Color(0xFF5C7999),
+    );
+  }
+}
+
