@@ -12,10 +12,7 @@ import '../../domain/models/user_model.dart';
 class ResetPasswordSuccessScreen extends StatelessWidget {
   final String email;
 
-  const ResetPasswordSuccessScreen({
-    super.key,
-    required this.email,
-  });
+  const ResetPasswordSuccessScreen({super.key, required this.email});
 
   void _handleContinue(BuildContext context) {
     // Lookup user or build authenticated model
@@ -140,7 +137,10 @@ class ResetPasswordSuccessScreen extends StatelessWidget {
 
             // Bottom Button: "Go to Homepage"
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -157,10 +157,7 @@ class ResetPasswordSuccessScreen extends StatelessWidget {
                   ),
                   child: const Text(
                     'Go to Homepage',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),

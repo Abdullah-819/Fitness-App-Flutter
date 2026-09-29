@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,10 +13,7 @@ import 'create_new_password_screen.dart';
 class EnterOtpScreen extends StatefulWidget {
   final String email;
 
-  const EnterOtpScreen({
-    super.key,
-    required this.email,
-  });
+  const EnterOtpScreen({super.key, required this.email});
 
   @override
   State<EnterOtpScreen> createState() => _EnterOtpScreenState();
@@ -23,8 +21,10 @@ class EnterOtpScreen extends StatefulWidget {
 
 class _EnterOtpScreenState extends State<EnterOtpScreen> {
   // 4 individual digit controllers & focus nodes
-  final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
   int _secondsRemaining = 56;
@@ -138,9 +138,7 @@ class _EnterOtpScreenState extends State<EnterOtpScreen> {
     if (isValid) {
       AppToast.success('OTP verified successfully!');
       Navigator.of(context).pushReplacement(
-        AppPageRoute(
-          page: CreateNewPasswordScreen(email: widget.email),
-        ),
+        AppPageRoute(page: CreateNewPasswordScreen(email: widget.email)),
       );
     } else {
       AppToast.error('Invalid OTP code. Please enter 1234');
@@ -184,7 +182,10 @@ class _EnterOtpScreenState extends State<EnterOtpScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.password_rounded, color: AppColors.primaryPurple),
+            icon: const Icon(
+              Icons.password_rounded,
+              color: AppColors.primaryPurple,
+            ),
             tooltip: 'Auto-fill Demo Code (1234)',
             onPressed: _fillDemoOtp,
           ),
