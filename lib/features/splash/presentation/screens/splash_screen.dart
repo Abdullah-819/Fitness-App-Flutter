@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../widgets/fading_spinner.dart';
+
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+
 import '../widgets/footprints_icon.dart';
 
 /// Minimalist, high-performance splash screen for Step Counter & Walking Goals.
@@ -134,10 +136,9 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const Spacer(flex: 6),
                 // Bottom animated loading spinner
-                const FadingSpinner(
-                  size: 76,
-                  strokeWidth: 9.0,
+                LoadingAnimationWidget.inkDrop(
                   color: AppColors.white,
+                  size: 50,
                 ),
                 const SizedBox(height: 64),
               ],

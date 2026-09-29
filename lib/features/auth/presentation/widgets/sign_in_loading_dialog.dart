@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/constants/app_colors.dart';
-import '../../../splash/presentation/widgets/fading_spinner.dart';
+
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 /// Modal loading dialog matching 18_Light_sign in loading.png.
 class SignInLoadingDialog extends StatelessWidget {
   final String message;
 
-  const SignInLoadingDialog({
-    super.key,
-    this.message = 'Sign in...',
-  });
+  const SignInLoadingDialog({super.key, this.message = 'Sign in...'});
 
   /// Static helper to display the dialog
-  static Future<void> show(BuildContext context, {String message = 'Sign in...'}) {
+  static Future<void> show(
+    BuildContext context, {
+    String message = 'Sign in...',
+  }) {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -49,10 +51,9 @@ class SignInLoadingDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const FadingSpinner(
-                size: 58,
-                strokeWidth: 6.5,
+              LoadingAnimationWidget.inkDrop(
                 color: AppColors.primaryPurple,
+                size: 50,
               ),
               const SizedBox(height: 20),
               Text(
