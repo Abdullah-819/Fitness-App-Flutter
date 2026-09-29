@@ -12,6 +12,7 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/sign_in_loading_dialog.dart';
 import '../widgets/social_logos.dart';
 import '../widgets/social_sign_in_button.dart';
+import 'forgot_password_screen.dart';
 
 /// Pixel-accurate Sign In Screen matching design 16_Light_sign in blank form.png.
 class SignInScreen extends StatefulWidget {
@@ -581,15 +582,12 @@ class _SignInScreenState extends State<SignInScreen> {
 
                     // Forgot Password?
                     TextButton(
+                      key: const Key('forgot_password_button'),
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Default user password: password123',
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        Navigator.of(context).push(
+                          AppPageRoute(
+                            page: ForgotPasswordScreen(
+                              initialEmail: _emailController.text.trim(),
                             ),
                           ),
                         );
