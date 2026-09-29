@@ -5,7 +5,7 @@ import 'package:step_counter/features/auth/data/auth_service.dart';
 import 'package:step_counter/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:step_counter/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:step_counter/features/auth/presentation/widgets/auth_form_icons.dart';
-import 'package:step_counter/features/home/presentation/screens/home_screen.dart';
+import 'package:step_counter/features/onboarding/presentation/screens/sign_up_steps_screen.dart';
 
 void main() {
   group('AuthService SignUp Tests', () {
@@ -278,8 +278,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 1100));
         await tester.pumpAndSettle();
 
-        // Should have navigated to HomeScreen
-        expect(find.byType(HomeScreen), findsOneWidget);
+        // Should have navigated to SignUpStepsScreen (Onboarding steps 1 to 6)
+        expect(find.byType(SignUpStepsScreen), findsOneWidget);
       },
     );
 
