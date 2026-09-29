@@ -65,11 +65,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       AppToast.success('OTP sent to $email! (Use demo code: 1234)');
 
       // Smooth transition to Enter OTP screen
-      Navigator.of(context).push(
-        AppPageRoute(
-          page: EnterOtpScreen(email: email),
-        ),
-      );
+      Navigator.of(context)
+          .push(AppPageRoute(page: EnterOtpScreen(email: email)));
     } catch (e) {
       if (!mounted) return;
 

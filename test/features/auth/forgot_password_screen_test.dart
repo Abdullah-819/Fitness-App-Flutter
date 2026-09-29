@@ -49,31 +49,32 @@ void main() {
       );
     });
 
-    test('updatePassword updates password and allows login with new password', () async {
-      const testEmail = 'abdullah.rana@trackfit.com';
-      const newPass = 'BrandNewPassword123';
+    test(
+      'updatePassword updates password and allows login with new password',
+      () async {
+        const testEmail = 'abdullah.rana@trackfit.com';
+        const newPass = 'BrandNewPassword123';
 
-      AuthService.instance.updatePassword(
-        email: testEmail,
-        newPassword: newPass,
-      );
-
-      // Sign in with new password succeeds
-      final user = await AuthService.instance.signIn(
-        email: testEmail,
-        password: newPass,
-      );
-      expect(user.email, equals(testEmail));
-
-      // Sign in with old password fails
-      expect(
-        () => AuthService.instance.signIn(
+        AuthService.instance.updatePassword(
           email: testEmail,
-          password: '696969',
-        ),
-        throwsA(isA<AuthException>()),
-      );
-    });
+          newPassword: newPass,
+        );
+
+        // Sign in with new password succeeds
+        final user = await AuthService.instance.signIn(
+          email: testEmail,
+          password: newPass,
+        );
+        expect(user.email, equals(testEmail));
+
+        // Sign in with old password fails
+        expect(
+          () =>
+              AuthService.instance.signIn(email: testEmail, password: '696969'),
+          throwsA(isA<AuthException>()),
+        );
+      },
+    );
   });
 
   group('ForgotPasswordScreen Widget Tests', () {
@@ -132,11 +133,11 @@ void main() {
   });
 
   group('EnterOtpScreen Widget Tests', () {
-    testWidgets('Renders title, 4 boxes, countdown, and resend button', (tester) async {
+    testWidgets('Renders title, 4 boxes, countdown, and resend button', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: EnterOtpScreen(email: 'test@fitness.com'),
-        ),
+        const MaterialApp(home: EnterOtpScreen(email: 'test@fitness.com')),
       );
 
       expect(find.textContaining('Enter OTP Code'), findsOneWidget);
@@ -147,7 +148,9 @@ void main() {
   });
 
   group('CreateNewPasswordScreen Widget Tests', () {
-    testWidgets('Renders fields and validates matching password', (tester) async {
+    testWidgets('Renders fields and validates matching password', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: CreateNewPasswordScreen(email: 'test@fitness.com'),
@@ -162,7 +165,9 @@ void main() {
   });
 
   group('ResetPasswordSuccessScreen Widget Tests', () {
-    testWidgets('Renders You are all set and Go to Homepage button', (tester) async {
+    testWidgets('Renders You are all set and Go to Homepage button', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: ResetPasswordSuccessScreen(email: 'test@fitness.com'),

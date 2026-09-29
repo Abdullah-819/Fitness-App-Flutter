@@ -13,13 +13,11 @@ import 'reset_password_success_screen.dart';
 class CreateNewPasswordScreen extends StatefulWidget {
   final String email;
 
-  const CreateNewPasswordScreen({
-    super.key,
-    required this.email,
-  });
+  const CreateNewPasswordScreen({super.key, required this.email});
 
   @override
-  State<CreateNewPasswordScreen> createState() => _CreateNewPasswordScreenState();
+  State<CreateNewPasswordScreen> createState() =>
+      _CreateNewPasswordScreenState();
 }
 
 class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
@@ -39,7 +37,9 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
   Future<void> _handleSavePassword() async {
     if (!_formKey.currentState!.validate()) {
-      AppToast.error('Please ensure passwords match and are at least 6 characters');
+      AppToast.error(
+        'Please ensure passwords match and are at least 6 characters',
+      );
       return;
     }
 
@@ -64,9 +64,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
     // Smooth navigation to success screen
     Navigator.of(context).pushReplacement(
-      AppPageRoute(
-        page: ResetPasswordSuccessScreen(email: widget.email),
-      ),
+      AppPageRoute(page: ResetPasswordSuccessScreen(email: widget.email)),
     );
   }
 
@@ -91,7 +89,10 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 8.0,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -205,7 +206,8 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                               : 'Hide password',
                           onPressed: () {
                             setState(() {
-                              _obscureConfirmPassword = !_obscureConfirmPassword;
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
                             });
                           },
                         ),
@@ -227,7 +229,10 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
             // Pinned Bottom Button: "Save New Password"
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -244,10 +249,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                   ),
                   child: const Text(
                     'Save New Password',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
