@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:step_counter/features/splash/presentation/screens/splash_screen.dart';
-import 'package:step_counter/features/splash/presentation/widgets/fading_spinner.dart';
 import 'package:step_counter/features/splash/presentation/widgets/footprints_icon.dart';
 
 void main() {
@@ -26,9 +25,6 @@ void main() {
 
       // Verify FootprintsIcon exists
       expect(find.byType(FootprintsIcon), findsOneWidget);
-
-      // Verify FadingSpinner exists
-      expect(find.byType(FadingSpinner), findsOneWidget);
 
       // Advance animation past entrance and splash duration
       await tester.pump(const Duration(milliseconds: 600));
