@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import '../domain/models/user_model.dart';
 
 /// Exception thrown during authentication failures.
@@ -41,6 +42,12 @@ class AuthService {
   static const String defaultPassword = 'password123';
   static const String defaultName = 'Andrew Ainsley';
 
+  /// Static OTP code for testing until Firebase is connected
+  static const String staticOtp = '1234';
+
+  /// Dynamic storage for updated user passwords
+  final Map<String, String> _customPasswords = {};
+
   /// Predefined project team members
   static const List<TeamMemberCredentials> teamMembers = [
     TeamMemberCredentials(
@@ -66,6 +73,16 @@ class AuthService {
     ),
   ];
 
+  /// Verifies an OTP code (checks against static OTP '1234')
+  bool verifyOtp({required String email, required String otp}) {
+    return otp.trim() == staticOtp;
+  }
+
+  /// Updates the password for a given user email so subsequent logins work with this password
+  void updatePassword({required String email, required String newPassword}) {
+    _customPasswords[email.trim().toLowerCase()] = newPassword.trim();
+  }
+
   /// Sign in with email and password.
   /// Throws [AuthException] on invalid credentials.
   Future<UserModel> signIn({
@@ -78,14 +95,38 @@ class AuthService {
     final normalizedEmail = email.trim().toLowerCase();
     final trimmedPassword = password.trim();
 
+    // 0. Check custom updated passwords first (from forgot password flow)
+    if (_customPasswords.containsKey(normalizedEmail)) {
+      if (trimmedPassword == _customPasswords[normalizedEmail]) {
+        // Derive or lookup name
+        String userName = defaultName;
+        for (final m in teamMembers) {
+          if (m.email.toLowerCase() == normalizedEmail) {
+            userName = m.name;
+            break;
+          }
+        }
+        _currentUser = UserModel(
+          id: 'user_${normalizedEmail.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}',
+          email: normalizedEmail,
+          name: userName,
+        );
+        return _currentUser!;
+      } else {
+        throw const AuthException('Incorrect password. Please try again.');
+      }
+    }
+
     // 1. Check Team Members
     for (final member in teamMembers) {
-      final isMemberEmail = normalizedEmail == member.email.toLowerCase() ||
+      final isMemberEmail =
+          normalizedEmail == member.email.toLowerCase() ||
           normalizedEmail == '${member.email.split('@')[0]}@fitness.com' ||
           normalizedEmail == '${member.email.split('@')[0]}@yourdomain.com' ||
           normalizedEmail == member.name.toLowerCase();
 
-      final isMemberPass = trimmedPassword == '696969' ||
+      final isMemberPass =
+          trimmedPassword == '696969' ||
           trimmedPassword == 'pass: 696969' ||
           trimmedPassword == member.password;
 
@@ -104,11 +145,13 @@ class AuthService {
     }
 
     // 2. Check Default Legacy / Demo Credentials
-    final isDefaultEmail = normalizedEmail == defaultEmail.toLowerCase() ||
+    final isDefaultEmail =
+        normalizedEmail == defaultEmail.toLowerCase() ||
         normalizedEmail == 'user@fitness.com' ||
         normalizedEmail == 'admin@fitness.com';
 
-    final isDefaultPassword = trimmedPassword == defaultPassword ||
+    final isDefaultPassword =
+        trimmedPassword == defaultPassword ||
         trimmedPassword == '123456' ||
         trimmedPassword == 'Andrew@123';
 
@@ -165,12 +208,12 @@ class AuthService {
     final derivedName = (name != null && name.trim().isNotEmpty)
         ? name.trim()
         : normalizedEmail
-            .split('@')[0]
-            .replaceAll(RegExp(r'[._]'), ' ')
-            .split(' ')
-            .where((s) => s.isNotEmpty)
-            .map((s) => '${s[0].toUpperCase()}${s.substring(1)}')
-            .join(' ');
+              .split('@')[0]
+              .replaceAll(RegExp(r'[._]'), ' ')
+              .split(' ')
+              .where((s) => s.isNotEmpty)
+              .map((s) => '${s[0].toUpperCase()}${s.substring(1)}')
+              .join(' ');
 
     _currentUser = UserModel(
       id: 'user_${DateTime.now().millisecondsSinceEpoch}',
@@ -181,9 +224,49 @@ class AuthService {
     return _currentUser!;
   }
 
+  /// Checks if an email corresponds to a registered account (demo or team members).
+  bool isEmailRegistered(String email) {
+    final normalized = email.trim().toLowerCase();
+    if (normalized == defaultEmail.toLowerCase() ||
+        normalized == 'user@fitness.com' ||
+        normalized == 'admin@fitness.com') {
+      return true;
+    }
+    for (final member in teamMembers) {
+      if (normalized == member.email.toLowerCase() ||
+          normalized == '${member.email.split('@')[0]}@fitness.com' ||
+          normalized == '${member.email.split('@')[0]}@yourdomain.com' ||
+          normalized == member.name.toLowerCase()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Sends password reset OTP to registered email.
+  Future<void> sendPasswordResetOtp(String email) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 900));
+
+    final normalized = email.trim().toLowerCase();
+
+    if (normalized.isEmpty) {
+      throw const AuthException('Please enter your email address.');
+    }
+
+    if (!normalized.contains('@') || !normalized.contains('.')) {
+      throw const AuthException('Please enter a valid email address.');
+    }
+
+    if (!isEmailRegistered(normalized)) {
+      throw const AuthException(
+        'No account found with this email. Please check and try again.',
+      );
+    }
+  }
+
   /// Sign out the current user
   void signOut() {
     _currentUser = null;
   }
 }
-

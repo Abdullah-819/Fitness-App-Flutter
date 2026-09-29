@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/navigation/page_transitions.dart';
 import '../../../../core/services/local_database.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
 import '../../../goals/data/models/goal_model.dart';
@@ -129,17 +131,13 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
 
     if (!mounted) return;
 
+    // Green success toast message at the bottom
+    AppToast.success("Profile setup complete! Let's crush those goals!");
+
     // 3. Smooth transition to HomeScreen
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            HomeScreen(user: updatedUser),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 350),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(AppPageRoute.fade(page: HomeScreen(user: updatedUser)));
   }
 
   @override

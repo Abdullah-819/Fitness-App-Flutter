@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/navigation/page_transitions.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
 import '../../../auth/presentation/screens/sign_in_screen.dart';
@@ -13,15 +16,9 @@ class HomeScreen extends StatelessWidget {
 
   void _handleSignOut(BuildContext context) {
     AuthService.instance.signOut();
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const SignInScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-      ),
-    );
+    AppToast.info('Signed out successfully');
+    Navigator.of(context)
+        .pushReplacement(AppPageRoute.fade(page: const SignInScreen()));
   }
 
   @override
@@ -34,10 +31,7 @@ class HomeScreen extends StatelessWidget {
         leading: const Padding(
           padding: EdgeInsets.only(left: 20),
           child: Center(
-            child: FootprintsIcon(
-              size: 28,
-              color: AppColors.primaryPurple,
-            ),
+            child: FootprintsIcon(size: 28, color: AppColors.primaryPurple),
           ),
         ),
         title: const Text(
@@ -51,7 +45,10 @@ class HomeScreen extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppColors.textPrimary),
+            icon: const Icon(
+              Icons.logout_rounded,
+              color: AppColors.textPrimary,
+            ),
             tooltip: 'Sign Out',
             onPressed: () => _handleSignOut(context),
           ),
@@ -141,7 +138,10 @@ class HomeScreen extends StatelessWidget {
               // Step Gauge Card Preview (matching 25_Light_home - default.png)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 36,
+                  horizontal: 24,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
