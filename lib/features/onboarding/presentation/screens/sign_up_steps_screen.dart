@@ -20,11 +20,7 @@ class SignUpStepsScreen extends StatefulWidget {
   final UserModel? user;
   final int initialStep;
 
-  const SignUpStepsScreen({
-    super.key,
-    this.user,
-    this.initialStep = 0,
-  });
+  const SignUpStepsScreen({super.key, this.user, this.initialStep = 0});
 
   @override
   State<SignUpStepsScreen> createState() => _SignUpStepsScreenState();
@@ -93,7 +89,8 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
 
   Future<void> _handleFinish() async {
     // 1. Create or update user model with onboarding choices
-    final baseUser = widget.user ??
+    final baseUser =
+        widget.user ??
         AuthService.instance.currentUser ??
         UserModel(
           id: 'user_${DateTime.now().millisecondsSinceEpoch}',
@@ -117,7 +114,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
     // 2. Persist daily step goal in LocalDatabase if initialized
     try {
       if (LocalDatabase.instance.isInitialized) {
-        final existingGoal = LocalDatabase.instance.goalsBox.get('current_goal');
+        final existingGoal = LocalDatabase.instance.goalsBox.get(
+          'current_goal',
+        );
         final newGoal = (existingGoal ?? GoalModel.defaultGoal()).copyWith(
           dailyStepGoal: _selectedStepGoal,
           updatedAt: DateTime.now(),
@@ -220,7 +219,10 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
 
             // Bottom Navigation Buttons: "Skip" and "Continue" / "Finish"
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Row(
                 children: [
                   // Skip button
@@ -255,7 +257,11 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                     child: SizedBox(
                       height: 56,
                       child: ElevatedButton(
-                        key: Key(isLastStep ? 'step_finish_button' : 'step_continue_button'),
+                        key: Key(
+                          isLastStep
+                              ? 'step_finish_button'
+                              : 'step_continue_button',
+                        ),
                         onPressed: _handleContinue,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryPurple,
@@ -306,6 +312,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
   // STEP 1: Select Your Gender (9_Light & 10_Light)
   // -------------------------------------------------------------
   Widget _buildGenderStep() {
+    final isMan = _selectedGender == 'Man';
+    final isWoman = _selectedGender == 'Woman';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -318,175 +327,154 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Two side-by-side figures: Man & Woman
+          // Two side-by-side figures: Man & Woman with interactive scaling animation
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               // Man option
               Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+                child: _buildGenderFigure(
+                  label: 'Man',
+                  assetPath: AppAssets.genderMan,
+                  isSelected: isMan,
                   onTap: () {
                     setState(() {
                       _selectedGender = 'Man';
                     });
                   },
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 380,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Glowing purple circle behind selected figure
-                            if (_selectedGender == 'Man')
-                              Positioned(
-                                top: 40,
-                                child: Container(
-                                  width: 140,
-                                  height: 140,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primaryPurple,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-
-                            // Oval shadow base under feet
-                            Positioned(
-                              bottom: 0,
-                              child: Container(
-                                width: 140,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: _selectedGender == 'Man'
-                                      ? AppColors.primaryPurple
-                                      : const Color(0xFFE9ECF0),
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.elliptical(140, 32),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Man illustration image
-                            Positioned(
-                              bottom: 10,
-                              child: Image.asset(
-                                _selectedGender == 'Man'
-                                    ? AppAssets.genderManSelected
-                                    : AppAssets.genderMan,
-                                height: 350,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                  Icons.man,
-                                  size: 200,
-                                  color: AppColors.primaryPurple,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        'Man',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: _selectedGender == 'Man'
-                              ? AppColors.primaryPurple
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
 
+              const SizedBox(width: 8),
+
               // Woman option
               Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+                child: _buildGenderFigure(
+                  label: 'Woman',
+                  assetPath: AppAssets.genderWoman,
+                  isSelected: isWoman,
                   onTap: () {
                     setState(() {
                       _selectedGender = 'Woman';
                     });
                   },
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 380,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Glowing purple circle behind selected woman
-                            if (_selectedGender == 'Woman')
-                              Positioned(
-                                top: 40,
-                                child: Container(
-                                  width: 140,
-                                  height: 140,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primaryPurple,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-
-                            // Oval shadow base under feet
-                            Positioned(
-                              bottom: 0,
-                              child: Container(
-                                width: 140,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: _selectedGender == 'Woman'
-                                      ? AppColors.primaryPurple
-                                      : const Color(0xFFE9ECF0),
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.elliptical(140, 32),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Woman illustration image
-                            Positioned(
-                              bottom: 10,
-                              child: Image.asset(
-                                AppAssets.genderWoman,
-                                height: 350,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                  Icons.woman,
-                                  size: 200,
-                                  color: AppColors.primaryPurple,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        'Woman',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: _selectedGender == 'Woman'
-                              ? AppColors.primaryPurple
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderFigure({
+    required String label,
+    required String assetPath,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Column(
+        children: [
+          SizedBox(
+            height: 380,
+            child: AnimatedScale(
+              scale: isSelected ? 1.05 : 0.88,
+              alignment: Alignment.bottomCenter,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
+              child: AnimatedOpacity(
+                opacity: isSelected ? 1.0 : 0.65,
+                duration: const Duration(milliseconds: 300),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    // Glowing purple circle behind selected figure
+                    Positioned(
+                      top: 40,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 250),
+                          opacity: isSelected ? 1.0 : 0.0,
+                          child: AnimatedScale(
+                            duration: const Duration(milliseconds: 250),
+                            scale: isSelected ? 1.0 : 0.6,
+                            child: Container(
+                              width: 140,
+                              height: 140,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primaryPurple,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Oval shadow base under feet
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          width: isSelected ? 144 : 118,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primaryPurple
+                                : const Color(0xFFE9ECF0),
+                            borderRadius: const BorderRadius.all(
+                              Radius.elliptical(144, 32),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Figure illustration image
+                    Positioned(
+                      bottom: 10,
+                      left: 0,
+                      right: 0,
+                      child: Image.asset(
+                        assetPath,
+                        height: 350,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          label == 'Man' ? Icons.man : Icons.woman,
+                          size: 200,
+                          color: AppColors.primaryPurple,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 250),
+            style: TextStyle(
+              fontSize: isSelected ? 20 : 18,
+              fontWeight: FontWeight.w700,
+              color: isSelected
+                  ? AppColors.primaryPurple
+                  : AppColors.textPrimary,
+              letterSpacing: -0.2,
+            ),
+            child: Text(label),
+          ),
         ],
       ),
     );
@@ -547,7 +535,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                     boxShadow: !_isSedentary
                         ? [
                             BoxShadow(
-                              color: AppColors.primaryPurple.withValues(alpha: 0.3),
+                              color: AppColors.primaryPurple.withValues(
+                                alpha: 0.3,
+                              ),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -560,7 +550,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: !_isSedentary ? Colors.white : AppColors.textPrimary,
+                        color: !_isSedentary
+                            ? Colors.white
+                            : AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -588,7 +580,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                     boxShadow: _isSedentary
                         ? [
                             BoxShadow(
-                              color: AppColors.primaryPurple.withValues(alpha: 0.3),
+                              color: AppColors.primaryPurple.withValues(
+                                alpha: 0.3,
+                              ),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -601,7 +595,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: _isSedentary ? Colors.white : AppColors.textPrimary,
+                        color: _isSedentary
+                            ? Colors.white
+                            : AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -875,7 +871,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
               color: isLeft ? AppColors.primaryPurple : Colors.white,
               borderRadius: BorderRadius.circular(19),
               border: Border.all(
-                color: isLeft ? AppColors.primaryPurple : const Color(0xFFE5E7EB),
+                color: isLeft
+                    ? AppColors.primaryPurple
+                    : const Color(0xFFE5E7EB),
                 width: 1.2,
               ),
             ),
@@ -902,7 +900,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
               color: !isLeft ? AppColors.primaryPurple : Colors.white,
               borderRadius: BorderRadius.circular(19),
               border: Border.all(
-                color: !isLeft ? AppColors.primaryPurple : const Color(0xFFE5E7EB),
+                color: !isLeft
+                    ? AppColors.primaryPurple
+                    : const Color(0xFFE5E7EB),
                 width: 1.2,
               ),
             ),
