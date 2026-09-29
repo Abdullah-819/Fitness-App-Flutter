@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/navigation/page_transitions.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../home/presentation/screens/home_screen.dart';
 import '../../../onboarding/presentation/screens/welcome_screen.dart';
 import '../../data/auth_service.dart';
@@ -10,6 +12,7 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/sign_in_loading_dialog.dart';
 import '../widgets/social_logos.dart';
 import '../widgets/social_sign_in_button.dart';
+import 'forgot_password_screen.dart';
 
 /// Pixel-accurate Sign In Screen matching design 16_Light_sign in blank form.png.
 class SignInScreen extends StatefulWidget {
@@ -169,12 +172,19 @@ class _SignInScreenState extends State<SignInScreen> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 'Logging in as ${member.name}...',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -193,6 +203,7 @@ class _SignInScreenState extends State<SignInScreen> {
   /// Executes sign-in with loading modal matching 18_Light_sign in loading.png
   Future<void> _handleSignIn() async {
     if (!_formKey.currentState!.validate()) {
+      AppToast.error('Please enter valid email and password');
       return;
     }
 
@@ -213,24 +224,28 @@ class _SignInScreenState extends State<SignInScreen> {
       // Dismiss loading modal
       SignInLoadingDialog.hide(context);
 
-      // Navigate to Home / User Dashboard
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              HomeScreen(user: user),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 350),
-        ),
-      );
+      // Green success toast message at the bottom
+      AppToast.success('Welcome back, ${user.name}!');
+
+      // Navigate to Home with smooth fade transition
+      Navigator.of(context)
+          .pushReplacement(AppPageRoute.fade(page: HomeScreen(user: user)));
     } catch (e) {
       if (!mounted) return;
 
       // Dismiss loading modal
       SignInLoadingDialog.hide(context);
 
-      // Show user-friendly error
+      // Clean error message
+      final errorMsg = e
+          .toString()
+          .replaceFirst('AuthException: ', '')
+          .replaceFirst('Exception: ', '');
+
+      // Red custom error toast at the bottom
+      AppToast.error(errorMsg);
+
+      // Also show user-friendly SnackBar with Fill Default action
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -239,7 +254,7 @@ class _SignInScreenState extends State<SignInScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  e.toString(),
+                  errorMsg,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -250,7 +265,9 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
           backgroundColor: Colors.redAccent.shade700,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           action: SnackBarAction(
             label: 'Fill Default',
             textColor: Colors.white,
@@ -279,9 +296,9 @@ class _SignInScreenState extends State<SignInScreen> {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
             } else {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const WelcomeScreen()),
-              );
+              Navigator.of(
+                context,
+              ).pushReplacement(AppPageRoute.fade(page: const WelcomeScreen()));
             }
           },
         ),
@@ -295,7 +312,9 @@ class _SignInScreenState extends State<SignInScreen> {
               } else if (value == 'help') {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Help: Use andrew.ainsley@yourdomain.com / password123'),
+                    content: Text(
+                      'Help: Use andrew.ainsley@yourdomain.com / password123',
+                    ),
                   ),
                 );
               }
@@ -305,7 +324,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 value: 'fill',
                 child: Row(
                   children: [
-                    Icon(Icons.person_outline, size: 20, color: AppColors.primaryPurple),
+                    Icon(
+                      Icons.person_outline,
+                      size: 20,
+                      color: AppColors.primaryPurple,
+                    ),
                     SizedBox(width: 10),
                     Text('Auto-fill Demo User'),
                   ],
@@ -315,7 +338,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 value: 'help',
                 child: Row(
                   children: [
-                    Icon(Icons.help_outline, size: 20, color: AppColors.textPrimary),
+                    Icon(
+                      Icons.help_outline,
+                      size: 20,
+                      color: AppColors.textPrimary,
+                    ),
                     SizedBox(width: 10),
                     Text('Help & Support'),
                   ],
@@ -454,7 +481,9 @@ class _SignInScreenState extends State<SignInScreen> {
                           : AppColors.primaryPurple,
                     ),
                     splashRadius: 18,
-                    tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                    tooltip: _obscurePassword
+                        ? 'Show password'
+                        : 'Hide password',
                     onPressed: () {
                       setState(() {
                         _obscurePassword = !_obscurePassword;
@@ -553,15 +582,12 @@ class _SignInScreenState extends State<SignInScreen> {
 
                     // Forgot Password?
                     TextButton(
+                      key: const Key('forgot_password_button'),
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Default user password: password123',
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        Navigator.of(context).push(
+                          AppPageRoute(
+                            page: ForgotPasswordScreen(
+                              initialEmail: _emailController.text.trim(),
                             ),
                           ),
                         );

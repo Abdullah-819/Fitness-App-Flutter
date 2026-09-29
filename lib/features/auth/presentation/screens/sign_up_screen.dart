@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/navigation/page_transitions.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../onboarding/presentation/screens/sign_up_steps_screen.dart';
 import '../../../onboarding/presentation/screens/welcome_screen.dart';
 import '../../data/auth_service.dart';
@@ -316,12 +318,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 'Filled credentials for $email',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -337,10 +346,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   /// Executes sign-up with loading modal matching 8_Light_sign up loading.png
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) {
+      AppToast.error(
+        'Please enter valid email and password (min 6 characters)',
+      );
       return;
     }
 
     if (!_agreedToTerms) {
+      AppToast.error('Please agree to TrackFit Terms & Conditions to sign up');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
@@ -357,7 +370,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
           backgroundColor: AppColors.primaryPurple,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -381,22 +396,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
       // Dismiss loading modal
       SignInLoadingDialog.hide(context);
 
-      // Navigate to Sign Up Steps Onboarding (Step 1 to 6)
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              SignUpStepsScreen(user: user),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 350),
-        ),
-      );
+      // Green success toast message at the bottom
+      AppToast.success('Account created successfully! Welcome to TrackFit!');
+
+      // Navigate to Sign Up Steps Onboarding (Step 1 to 6) with smooth transition
+      Navigator.of(context)
+          .pushReplacement(AppPageRoute(page: SignUpStepsScreen(user: user)));
     } catch (e) {
       if (!mounted) return;
 
       // Dismiss loading modal
       SignInLoadingDialog.hide(context);
+
+      final errorMsg = e
+          .toString()
+          .replaceFirst('AuthException: ', '')
+          .replaceFirst('Exception: ', '');
+
+      // Red error toast message at the bottom
+      AppToast.error(errorMsg);
 
       // Show user-friendly error
       ScaffoldMessenger.of(context).showSnackBar(
@@ -407,7 +425,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  e.toString(),
+                  errorMsg,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -418,7 +436,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
           backgroundColor: Colors.redAccent.shade700,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           duration: const Duration(seconds: 4),
         ),
       );
@@ -442,9 +462,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
             } else {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const WelcomeScreen()),
-              );
+              Navigator.of(
+                context,
+              ).pushReplacement(AppPageRoute.fade(page: const WelcomeScreen()));
             }
           },
         ),
@@ -458,9 +478,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               } else if (value == 'terms') {
                 _showTermsAndConditions();
               } else if (value == 'signin') {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const SignInScreen()),
-                );
+                Navigator.of(context)
+                    .pushReplacement(AppPageRoute(page: const SignInScreen()));
               }
             },
             itemBuilder: (context) => [
@@ -468,7 +487,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 value: 'fill',
                 child: Row(
                   children: [
-                    Icon(Icons.person_add_outlined, size: 20, color: AppColors.primaryPurple),
+                    Icon(
+                      Icons.person_add_outlined,
+                      size: 20,
+                      color: AppColors.primaryPurple,
+                    ),
                     SizedBox(width: 10),
                     Text('Auto-fill Demo User'),
                   ],
@@ -478,7 +501,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 value: 'terms',
                 child: Row(
                   children: [
-                    Icon(Icons.description_outlined, size: 20, color: AppColors.textPrimary),
+                    Icon(
+                      Icons.description_outlined,
+                      size: 20,
+                      color: AppColors.textPrimary,
+                    ),
                     SizedBox(width: 10),
                     Text('Terms & Conditions'),
                   ],
@@ -638,7 +665,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           : AppColors.primaryPurple,
                     ),
                     splashRadius: 18,
-                    tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                    tooltip: _obscurePassword
+                        ? 'Show password'
+                        : 'Hide password',
                     onPressed: () {
                       setState(() {
                         _obscurePassword = !_obscurePassword;
@@ -689,8 +718,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             boxShadow: _agreedToTerms
                                 ? [
                                     BoxShadow(
-                                      color: AppColors.primaryPurple
-                                          .withValues(alpha: 0.25),
+                                      color: AppColors.primaryPurple.withValues(
+                                        alpha: 0.25,
+                                      ),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
@@ -758,9 +788,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         GestureDetector(
                           onTap: () {
                             Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => const SignInScreen(),
-                              ),
+                              AppPageRoute(page: const SignInScreen()),
                             );
                           },
                           child: const Text(
