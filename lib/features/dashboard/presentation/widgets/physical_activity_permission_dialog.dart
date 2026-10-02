@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 /// Modal dialog for requesting Physical Activity permission.
 ///
@@ -32,11 +33,12 @@ class PhysicalActivityPermissionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: p.card,
       elevation: 16,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Padding(
@@ -64,13 +66,13 @@ class PhysicalActivityPermissionDialog extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Dialog Title
-            const Text(
+            Text(
               'Physical Activity\nPermission Request',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: p.textPrimary,
                 height: 1.25,
                 letterSpacing: -0.3,
               ),
@@ -79,12 +81,12 @@ class PhysicalActivityPermissionDialog extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Dialog Description
-            const Text(
+            Text(
               'TrackFit needs permission to access your physical activity data to accurately count your steps and monitor your progress.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: p.textSecondary,
                 height: 1.45,
                 fontWeight: FontWeight.w400,
               ),
