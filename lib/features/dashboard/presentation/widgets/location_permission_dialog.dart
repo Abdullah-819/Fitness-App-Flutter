@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/permission_service.dart';
 import '../../../../core/theme/app_palette.dart';
 
 /// Modal dialog for requesting Location Access permission.
@@ -25,7 +26,10 @@ class LocationPermissionDialog extends StatelessWidget {
       barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (context) => LocationPermissionDialog(
-        onGrant: () => Navigator.of(context).pop(true),
+        onGrant: () async {
+          final granted = await PermissionService.instance.requestLocation();
+          if (context.mounted) Navigator.of(context).pop(granted);
+        },
         onCancel: () => Navigator.of(context).pop(false),
       ),
     );
