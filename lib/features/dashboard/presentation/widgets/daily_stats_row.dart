@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 /// Three-column daily activity statistics row (Time, Calories, Distance).
 ///
@@ -20,11 +20,12 @@ class DailyStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: p.card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -40,7 +41,7 @@ class DailyStatsRow extends StatelessWidget {
           Container(
             height: 48,
             width: 1,
-            color: const Color(0xFFEDEEF2),
+            color: p.divider,
           ),
           Expanded(
             child: _StatColumn(
@@ -53,7 +54,7 @@ class DailyStatsRow extends StatelessWidget {
           Container(
             height: 48,
             width: 1,
-            color: const Color(0xFFEDEEF2),
+            color: p.divider,
           ),
           Expanded(
             child: _StatColumn(
@@ -84,6 +85,7 @@ class _StatColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -91,10 +93,10 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: p.textPrimary,
             letterSpacing: -0.3,
           ),
           maxLines: 1,
@@ -103,10 +105,10 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 3),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
+            color: p.textSecondary,
           ),
         ),
       ],

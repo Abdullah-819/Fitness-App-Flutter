@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 /// Speedometer-style circular arc step gauge matching the Figma Dashboard design.
 ///
@@ -34,13 +35,14 @@ class SpeedometerGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     final progress = stepGoal > 0 ? (currentSteps / stepGoal).clamp(0.0, 1.0) : 0.0;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: p.card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
@@ -61,8 +63,9 @@ class SpeedometerGauge extends StatelessWidget {
                     painter: _SpeedometerPainter(
                       progress: animatedProgress,
                       primaryColor: AppColors.primaryPurple,
-                      trackColor: const Color(0xFFEDEDED),
-                      tickColor: const Color(0xFFBDBDBD),
+                      trackColor: p.ringTrack,
+                      tickColor: p.ringTick,
+                      isDark: p.isDark,
                     ),
                   );
                 },
@@ -74,12 +77,12 @@ class SpeedometerGauge extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'Steps',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
+                        color: p.textSecondary,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -90,23 +93,23 @@ class SpeedometerGauge extends StatelessWidget {
                       curve: Curves.easeOut,
                       builder: (context, value, child) => Text(
                         _formatNumber(value),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 64,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: p.textPrimary,
                           letterSpacing: -1.2,
                           height: 1.1,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '/$stepGoal',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
+                        color: p.textSecondary,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -125,7 +128,7 @@ class SpeedometerGauge extends StatelessWidget {
                     height: 56,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isActive ? Colors.white : AppColors.primaryPurple,
+                      color: isActive ? p.card : AppColors.primaryPurple,
                       border: isActive
                           ? Border.all(color: AppColors.primaryPurple, width: 2.5)
                           : null,
@@ -164,8 +167,10 @@ class _SpeedometerPainter extends CustomPainter {
   final Color primaryColor;
   final Color trackColor;
   final Color tickColor;
+  final bool isDark;
 
   _SpeedometerPainter({
+    required this.isDark,
     required this.progress,
     required this.primaryColor,
     required this.trackColor,
@@ -197,21 +202,24 @@ class _SpeedometerPainter extends CustomPainter {
     // 1. Embossed track: dark drop shadow (bottom-right), white highlight
     // (top-left), then the soft grey body with a gentle sweep gradient.
     arc(trackRect.shift(const Offset(4, 7)),
-        stroke(Colors.black.withValues(alpha: 0.16), blur: 8));
+        stroke(Colors.black.withValues(alpha: isDark ? 0.45 : 0.16), blur: 8));
     arc(trackRect.shift(const Offset(-3, -4)),
-        stroke(Colors.white, blur: 5));
+        stroke(isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
+            blur: 5));
     arc(
       trackRect,
       stroke(trackColor)
-        ..shader = const SweepGradient(
+        ..shader = SweepGradient(
           startAngle: 0,
           endAngle: totalSweep,
-          colors: [Color(0xFFF7F7F7), Color(0xFFECECEC), Color(0xFFE4E4E4)],
-          transform: GradientRotation(startAngle),
+          colors: isDark
+              ? const [Color(0xFF2F313D), Color(0xFF2B2D38), Color(0xFF262833)]
+              : const [Color(0xFFF7F7F7), Color(0xFFECECEC), Color(0xFFE4E4E4)],
+          transform: const GradientRotation(startAngle),
         ).createShader(trackRect),
     );
     // Inner rim light for the rounded "tube" look
-    arc(trackRect, stroke(Colors.white.withValues(alpha: 0.6),
+    arc(trackRect, stroke(Colors.white.withValues(alpha: isDark ? 0.04 : 0.6),
         width: strokeWidth - 18, blur: 3));
 
     // 2. Inner Radial Tick Marks
@@ -250,6 +258,7 @@ class _SpeedometerPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _SpeedometerPainter oldDelegate) {
     return oldDelegate.progress != progress ||
+        oldDelegate.isDark != isDark ||
         oldDelegate.primaryColor != primaryColor ||
         oldDelegate.trackColor != trackColor;
   }
