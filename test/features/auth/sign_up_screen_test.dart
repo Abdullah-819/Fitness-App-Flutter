@@ -66,6 +66,9 @@ void main() {
             home: SignUpScreen(),
           ),
         );
+      await tester.tap(find.byKey(const Key('signup_method_email')));
+      await tester.pumpAndSettle();
+
 
         // Verify Header & Subtitle
         expect(find.text('Join TrackFit Today'), findsOneWidget);
@@ -163,6 +166,9 @@ void main() {
           home: SignUpScreen(),
         ),
       );
+      await tester.tap(find.byKey(const Key('signup_method_email')));
+      await tester.pumpAndSettle();
+
 
       // Enter text in email field
       final emailField = find.widgetWithText(TextFormField, '');
@@ -225,11 +231,14 @@ void main() {
           home: SignUpScreen(),
         ),
       );
+      await tester.tap(find.byKey(const Key('signup_method_email')));
+      await tester.pumpAndSettle();
+
 
       // Fill in valid email and password
       final textFields = find.byType(TextFormField);
       await tester.enterText(textFields.at(0), 'alex@domain.com');
-      await tester.enterText(textFields.at(1), 'securepassword');
+      await tester.enterText(textFields.at(1), 'Secure@123');
       await tester.pumpAndSettle();
 
       // Tap Sign up without checking terms
@@ -255,11 +264,14 @@ void main() {
             home: SignUpScreen(),
           ),
         );
+      await tester.tap(find.byKey(const Key('signup_method_email')));
+      await tester.pumpAndSettle();
+
 
         // Fill valid credentials
         final textFields = find.byType(TextFormField);
         await tester.enterText(textFields.at(0), 'alex@domain.com');
-        await tester.enterText(textFields.at(1), 'securepassword');
+        await tester.enterText(textFields.at(1), 'Secure@123');
 
         // Agree to terms via checkbox key
         await tester.tap(find.byKey(const Key('terms_checkbox')));
