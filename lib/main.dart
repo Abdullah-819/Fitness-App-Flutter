@@ -6,10 +6,9 @@ import 'core/theme/theme_controller.dart';
 import 'features/onboarding/presentation/screens/walkthrough_screen.dart';
 import 'features/splash/presentation/screens/splash_screen.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final themeController = ThemeController();
-  await themeController.load();
+  final themeController = ThemeController()..load(); // non-blocking
   runApp(
     ChangeNotifierProvider<ThemeController>.value(
       value: themeController,
