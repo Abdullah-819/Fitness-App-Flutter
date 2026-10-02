@@ -68,8 +68,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadUserGoal();
-    _restoreSession();
+    // Resolve the goal first so restored steps are compared against it.
+    _loadUserGoal().then((_) => _restoreSession());
 
     // Check permissions after first frame
     // Let the dashboard animate in before showing a dialog on top of it.
@@ -86,23 +86,32 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-  void _loadUserGoal() {
-    try {
-      if (LocalDatabase.instance.isInitialized) {
-        final savedGoal = LocalDatabase.instance.goalsBox.get('current_goal');
-        if (savedGoal != null && savedGoal.dailyStepGoal > 0) {
-          setState(() {
-            _stepGoal = savedGoal.dailyStepGoal;
-          });
-          return;
+  /// Daily goal priority: the signed-in user's goal (set during onboarding),
+  /// then the saved goal, then the goals database, then 6,000.
+  Future<void> _loadUserGoal() async {
+    int? goal =
+        widget.user?.dailyStepGoal ??
+        AuthService.instance.currentUser?.dailyStepGoal;
+
+    goal ??= await StepSessionStore.instance.loadGoal();
+
+    if (goal == null) {
+      try {
+        if (LocalDatabase.instance.isInitialized) {
+          goal = LocalDatabase.instance.goalsBox
+              .get('current_goal')
+              ?.dailyStepGoal;
         }
+      } catch (_) {
+        // Fall through to the default goal.
       }
-    } catch (_) {
-      // Continue with default 6,000 steps
     }
-    setState(() {
-      _stepGoal = 6000;
-    });
+
+    if (!mounted) return;
+    final resolved = (goal != null && goal > 0) ? goal : 6000;
+    setState(() => _stepGoal = resolved);
+    // Keep the saved goal in sync with what the dashboard shows.
+    await StepSessionStore.instance.saveGoal(resolved);
   }
 
   @override

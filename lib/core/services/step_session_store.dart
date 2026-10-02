@@ -69,6 +69,28 @@ class StepSessionStore {
     return Hive.openBox<Map<dynamic, dynamic>>(_boxName);
   }
 
+  static const String _goalKey = 'daily_step_goal';
+
+  /// Remembers the daily step goal chosen during onboarding.
+  Future<void> saveGoal(int goal) async {
+    try {
+      final box = await _box();
+      await box.put(_goalKey, {'goal': goal});
+    } catch (e) {
+      debugPrint('StepSessionStore: saveGoal failed ($e)');
+    }
+  }
+
+  Future<int?> loadGoal() async {
+    try {
+      final box = await _box();
+      return box.get(_goalKey)?['goal'] as int?;
+    } catch (e) {
+      debugPrint('StepSessionStore: loadGoal failed ($e)');
+      return null;
+    }
+  }
+
   Future<StepSession?> load() async {
     try {
       final box = await _box();
