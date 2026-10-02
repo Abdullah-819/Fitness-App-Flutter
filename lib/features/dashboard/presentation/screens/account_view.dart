@@ -31,6 +31,7 @@ class AccountView extends StatelessWidget {
     final rows = <MapEntry<String, String>>[
       MapEntry('Name', u?.name ?? '-'),
       MapEntry('Email', u?.email ?? '-'),
+      if (u?.phone != null) MapEntry('Phone', u!.phone!),
       MapEntry('Gender', u?.gender ?? '-'),
       MapEntry('Age', u?.age?.toString() ?? '-'),
       MapEntry('Height', u?.heightCm != null ? '${u!.heightCm} cm' : '-'),

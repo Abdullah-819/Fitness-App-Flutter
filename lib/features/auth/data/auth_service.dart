@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../domain/models/user_model.dart';
+import 'phone_account_store.dart';
 
 /// Exception thrown during authentication failures.
 class AuthException implements Exception {
@@ -221,6 +222,74 @@ class AuthService {
       name: derivedName.isNotEmpty ? derivedName : 'TrackFit User',
     );
 
+    return _currentUser!;
+  }
+
+  /// Sign up with a phone number (already validated/normalised, e.g.
+  /// +923006789089) and password.
+  /// Throws [AuthException] on invalid input.
+  Future<UserModel> signUpWithPhone({
+    required String phone,
+    required String password,
+    String? name,
+  }) async {
+    // Simulate network delay to match design 8_Light_sign up loading.png
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    final trimmedPassword = password.trim();
+
+    if (!RegExp(r'^\+923\d{9}$').hasMatch(phone)) {
+      throw const AuthException('Please enter a valid Pakistani phone number.');
+    }
+
+    if (trimmedPassword.length < 6) {
+      throw const AuthException('Password must be at least 6 characters long.');
+    }
+
+    await PhoneAccountStore.instance.register(phone, trimmedPassword);
+
+    _currentUser = UserModel(
+      id: 'user_phone_${phone.replaceAll('+', '')}',
+      email: '',
+      phone: phone,
+      name: (name != null && name.trim().isNotEmpty)
+          ? name.trim()
+          : 'TrackFit User',
+    );
+
+    return _currentUser!;
+  }
+
+  /// Sign in with a phone number (normalised, e.g. +923006789089) and
+  /// password. Throws [AuthException] if the account is unknown or the
+  /// password is wrong.
+  Future<UserModel> signInWithPhone({
+    required String phone,
+    required String password,
+  }) async {
+    // Simulate network delay to display loading state
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    if (!RegExp(r'^\+923\d{9}$').hasMatch(phone)) {
+      throw const AuthException('Please enter a valid Pakistani phone number.');
+    }
+
+    final store = PhoneAccountStore.instance;
+    if (!await store.exists(phone)) {
+      throw const AuthException(
+        'No account found for this number. Please sign up first.',
+      );
+    }
+    if (!await store.verify(phone, password.trim())) {
+      throw const AuthException('Incorrect password. Please try again.');
+    }
+
+    _currentUser = UserModel(
+      id: 'user_phone_${phone.replaceAll('+', '')}',
+      email: '',
+      phone: phone,
+      name: 'TrackFit User',
+    );
     return _currentUser!;
   }
 
