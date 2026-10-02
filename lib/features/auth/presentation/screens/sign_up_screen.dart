@@ -10,6 +10,9 @@ import '../../../onboarding/presentation/screens/welcome_screen.dart';
 import '../../data/auth_service.dart';
 import '../widgets/auth_form_icons.dart';
 import '../widgets/custom_text_field.dart';
+import '../widgets/password_rules_checklist.dart';
+import '../widgets/phone_number_field.dart';
+import '../widgets/sign_up_method_toggle.dart';
 import '../widgets/sign_in_loading_dialog.dart';
 import '../widgets/social_logos.dart';
 import '../widgets/social_sign_in_button.dart';
@@ -27,15 +30,25 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _agreedToTerms = false;
+  SignUpMethod _method = SignUpMethod.phone;
+
+  /// Set when a demo account is auto-filled: its short password is exempt
+  /// from the strength rules until the user edits it.
+  String? _demoPassword;
+
+  bool get _passwordRulesExempt =>
+      _demoPassword != null && _passwordController.text == _demoPassword;
 
   @override
   void initState() {
     super.initState();
     _emailController.addListener(_onEmailChanged);
+    _passwordController.addListener(_onEmailChanged);
   }
 
   void _onEmailChanged() {
@@ -45,7 +58,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _emailController.removeListener(_onEmailChanged);
+    _passwordController.removeListener(_onEmailChanged);
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -309,8 +324,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _fillCredentials(String email, String password) {
     setState(() {
+      _method = SignUpMethod.email;
       _emailController.text = email;
       _passwordController.text = password;
+      _demoPassword = password;
       _agreedToTerms = true;
     });
 
@@ -347,7 +364,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) {
       AppToast.error(
-        'Please enter valid email and password (min 6 characters)',
+        _method == SignUpMethod.phone
+            ? 'Please enter a valid phone number and a strong password'
+            : 'Please enter a valid email and a strong password',
       );
       return;
     }
@@ -386,10 +405,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
     SignInLoadingDialog.show(context, message: 'Sign up...');
 
     try {
-      final user = await AuthService.instance.signUp(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      final user = _method == SignUpMethod.phone
+          ? await AuthService.instance.signUpWithPhone(
+              phone: PkPhone.e164(_phoneController.text),
+              password: _passwordController.text,
+            )
+          : await AuthService.instance.signUp(
+              email: _emailController.text,
+              password: _passwordController.text,
+            );
 
       if (!mounted) return;
 
@@ -613,36 +637,69 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 22),
 
-                // Email Input Field (with left Lucide mail icon & right Lucide clear icon)
-                CustomTextField(
-                  label: 'Email',
-                  hintText: 'Email',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const AuthMailIcon(size: 20),
-                  suffixIcon: _emailController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(
-                            LucideIcons.circleX,
-                            size: 18,
-                            color: AppColors.textLight,
-                          ),
-                          splashRadius: 18,
-                          tooltip: 'Clear email',
-                          onPressed: () {
-                            _emailController.clear();
-                          },
-                        )
-                      : null,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your email address';
-                    }
-                    if (!value.contains('@') || !value.contains('.')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
+                // Phone / Email switch
+                SignUpMethodToggle(
+                  method: _method,
+                  onChanged: (m) {
+                    if (m == _method) return;
+                    FocusScope.of(context).unfocus();
+                    setState(() => _method = m);
                   },
+                ),
+
+                const SizedBox(height: 22),
+
+                // Phone or email input, cross-faded when switching
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.topCenter,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    child: _method == SignUpMethod.phone
+                        ? KeyedSubtree(
+                            key: const ValueKey('phone_input'),
+                            child: PhoneNumberField(
+                              controller: _phoneController,
+                            ),
+                          )
+                        : KeyedSubtree(
+                            key: const ValueKey('email_input'),
+                            child: CustomTextField(
+                              label: 'Email',
+                              hintText: 'Email',
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              prefixIcon: const AuthMailIcon(size: 20),
+                              suffixIcon: _emailController.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        LucideIcons.circleX,
+                                        size: 18,
+                                        color: AppColors.textLight,
+                                      ),
+                                      splashRadius: 18,
+                                      tooltip: 'Clear email',
+                                      onPressed: () {
+                                        _emailController.clear();
+                                      },
+                                    )
+                                  : null,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Please enter your email address';
+                                }
+                                if (!value.contains('@') ||
+                                    !value.contains('.')) {
+                                  return 'Please enter a valid email';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                  ),
                 ),
 
                 const SizedBox(height: 18),
@@ -678,12 +735,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your password';
                     }
-                    if (value.trim().length < 6) {
-                      return 'Password must be at least 6 characters';
+                    if (_passwordRulesExempt) return null;
+                    if (!PasswordRules.allPassed(value)) {
+                      return 'Password does not meet the requirements';
                     }
                     return null;
                   },
                 ),
+
+                const SizedBox(height: 10),
+
+                // Live password rules
+                PasswordRulesChecklist(password: _passwordController.text),
 
                 const SizedBox(height: 18),
 
