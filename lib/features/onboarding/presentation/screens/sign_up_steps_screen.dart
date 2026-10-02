@@ -4,6 +4,7 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/navigation/page_transitions.dart';
 import '../../../../core/services/local_database.dart';
+import '../../../../core/services/step_session_store.dart';
 import '../../../../core/utils/app_toast.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
@@ -113,7 +114,8 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
       dailyStepGoal: _selectedStepGoal,
     );
 
-    // 2. Persist daily step goal in LocalDatabase if initialized
+    // 2. Persist daily step goal so the dashboard shows the same target
+    await StepSessionStore.instance.saveGoal(_selectedStepGoal);
     try {
       if (LocalDatabase.instance.isInitialized) {
         final existingGoal = LocalDatabase.instance.goalsBox.get(
