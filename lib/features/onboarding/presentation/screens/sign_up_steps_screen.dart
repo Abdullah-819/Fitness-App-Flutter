@@ -314,7 +314,7 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
     final isWoman = _selectedGender == 'Woman';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         children: [
           const SizedBox(height: 16),
@@ -379,9 +379,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
       child: Column(
         children: [
           SizedBox(
-            height: 380,
+            height: 470,
             child: AnimatedScale(
-              scale: isSelected ? 1.05 : 0.88,
+              scale: isSelected ? 1.06 : 0.92,
               alignment: Alignment.bottomCenter,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOutCubic,
@@ -405,8 +405,8 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                             duration: const Duration(milliseconds: 250),
                             scale: isSelected ? 1.0 : 0.6,
                             child: Container(
-                              width: 140,
-                              height: 140,
+                              width: 170,
+                              height: 170,
                               decoration: const BoxDecoration(
                                 color: AppColors.primaryPurple,
                                 shape: BoxShape.circle,
@@ -425,14 +425,14 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                       child: Center(
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
-                          width: isSelected ? 144 : 118,
-                          height: 32,
+                          width: isSelected ? 180 : 150,
+                          height: 36,
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.primaryPurple
                                 : const Color(0xFFE9ECF0),
                             borderRadius: const BorderRadius.all(
-                              Radius.elliptical(144, 32),
+                              Radius.elliptical(180, 36),
                             ),
                           ),
                         ),
@@ -446,11 +446,12 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                       right: 0,
                       child: Image.asset(
                         assetPath,
-                        height: 350,
+                        height: 440,
+                        cacheHeight: AppAssets.genderImageCacheHeight,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) => Icon(
                           label == 'Man' ? Icons.man : Icons.woman,
-                          size: 200,
+                          size: 240,
                           color: AppColors.primaryPurple,
                         ),
                       ),

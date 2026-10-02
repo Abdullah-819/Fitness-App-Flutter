@@ -3,6 +3,9 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
     <!-- Required to schedule daily goal reminder notifications -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Location for live route tracking -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="TrackFit"
         android:name="${applicationName}"

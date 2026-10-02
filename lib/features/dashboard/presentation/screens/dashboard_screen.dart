@@ -6,11 +6,15 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/services/local_database.dart';
+import '../../../../core/services/permission_service.dart';
+import '../../../../core/services/step_sensor_service.dart';
+import '../../../../core/services/step_session_store.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
 import '../../../auth/presentation/screens/sign_in_screen.dart';
-import '../../../goals/data/models/goal_model.dart';
 import '../../../splash/presentation/widgets/footprints_icon.dart';
+import '../../../../widgets/fade_slide_in.dart';
 import '../widgets/daily_stats_row.dart';
 import '../widgets/dashboard_bottom_nav.dart';
 import '../widgets/goal_completion_dialog.dart';
@@ -37,7 +41,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with WidgetsBindingObserver {
   // Step & Fitness metrics state
   int _currentSteps = 0;
   int _stepGoal = 6000;
@@ -49,6 +54,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isActive = false;
   bool _hasPassedGoal = false;
   Timer? _stepTimer;
+  final StepSensorService _stepSensor = StepSensorService();
+  int? _sensorBaseline; // raw sensor value matching _stepsAtBaseline
+  int _stepsAtBaseline = 0;
+  bool _sensorUnavailable = false;
 
   // Navigation & UI state
   int _currentNavIndex = 0;
@@ -58,17 +67,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadUserGoal();
+    _restoreSession();
 
     // Check permissions after first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkInitialPermissions();
+    // Let the dashboard animate in before showing a dialog on top of it.
+    Future<void>.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) _checkInitialPermissions();
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _stepTimer?.cancel();
+    _stepSensor.stop();
     super.dispose();
   }
 
@@ -91,18 +105,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Back from the background: pick up steps counted while we were away.
+    if (state == AppLifecycleState.resumed) {
+      _restoreSession();
+    } else if (state == AppLifecycleState.paused) {
+      _persistSession();
+    }
+  }
+
+  /// Loads today's saved session. If counting was on, the phone's hardware
+  /// counter kept running while the app was closed, so the first sensor
+  /// reading adds those steps back in.
+  Future<void> _restoreSession() async {
+    if (_isActive) return; // already counting live
+    final saved = await StepSessionStore.instance.load();
+    if (!mounted || saved == null) return;
+    if (saved.day != StepSession.dayKey(DateTime.now())) return; // new day
+
+    final away = saved.active
+        ? ((DateTime.now().millisecondsSinceEpoch - saved.savedAtMs) ~/ 1000)
+              .clamp(0, 86400)
+        : 0;
+
+    setState(() {
+      _currentSteps = saved.steps;
+      _elapsedSeconds = saved.elapsedSeconds + away;
+      _hasPassedGoal = saved.steps >= _stepGoal;
+      _recalculateMetrics();
+    });
+
+    if (saved.active &&
+        !_isActive &&
+        await PermissionService.instance.hasActivity()) {
+      _sensorBaseline = saved.sensorBaseline;
+      _stepsAtBaseline = saved.steps;
+      _beginTracking();
+    }
+  }
+
+  void _persistSession() {
+    StepSessionStore.instance.save(
+      StepSession(
+        day: StepSession.dayKey(DateTime.now()),
+        steps: _currentSteps,
+        elapsedSeconds: _elapsedSeconds,
+        active: _isActive,
+        sensorBaseline: _sensorBaseline,
+        savedAtMs: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+  }
+
   Future<void> _checkInitialPermissions() async {
     if (_hasPromptedPermissions) return;
     _hasPromptedPermissions = true;
 
-    // Show Physical Activity Permission (Screen 23)
-    final activityGranted = await PhysicalActivityPermissionDialog.show(
-      context,
-    );
-    if (!mounted) return;
+    final permissions = PermissionService.instance;
 
-    if (activityGranted == true) {
-      // Show Location Permission (Screen 24)
+    // Physical Activity Permission (Screen 23)
+    var activityGranted = await permissions.hasActivity();
+    if (!activityGranted) {
+      if (!mounted) return;
+      activityGranted =
+          await PhysicalActivityPermissionDialog.show(context) == true;
+    }
+    if (!mounted || !activityGranted) return;
+
+    // Location Permission (Screen 24)
+    if (!await permissions.hasLocation()) {
+      if (!mounted) return;
       await LocationPermissionDialog.show(context);
     }
   }
@@ -115,38 +188,83 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _startCounting() {
+  Future<void> _startCounting() async {
+    // Real step counting needs the physical activity permission.
+    if (!await PermissionService.instance.hasActivity()) {
+      if (!mounted) return;
+      final granted = await PhysicalActivityPermissionDialog.show(context);
+      if (granted != true) {
+        AppToast.info('Physical activity permission is needed to count steps');
+        return;
+      }
+    }
+    if (!mounted) return;
+
+    _sensorBaseline = null; // first sensor reading becomes the new baseline
+    _stepsAtBaseline = _currentSteps;
+    _beginTracking();
+  }
+
+  /// Starts the sensor listener and the elapsed-time timer.
+  void _beginTracking() {
     setState(() {
       _isActive = true;
+      _sensorUnavailable = false;
     });
 
+    _stepSensor.start(
+      onRawSteps: (raw) {
+        if (!mounted || !_isActive) return;
+        final baseline = _sensorBaseline;
+        if (baseline == null || raw < baseline) {
+          // First reading (or the phone rebooted and reset its counter).
+          _sensorBaseline = raw;
+          _stepsAtBaseline = _currentSteps;
+        }
+        _updateSteps(_stepsAtBaseline + raw - _sensorBaseline!);
+      },
+      onError: (_) {
+        // No step sensor (e.g. emulator): fall back to one step per second.
+        if (!mounted) return;
+        setState(() => _sensorUnavailable = true);
+        AppToast.info('Step sensor unavailable, using simulated steps');
+      },
+    );
+
+    // Timer drives elapsed time (and the fallback when there is no sensor).
     _stepTimer?.cancel();
     _stepTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-
-      setState(() {
-        _elapsedSeconds += 1;
-        // One step per tick
-        _currentSteps += 1;
-        _recalculateMetrics();
-
-        // Check if goal was just passed
-        if (_currentSteps >= _stepGoal && !_hasPassedGoal) {
-          _hasPassedGoal = true;
-          _showGoalCompletedCelebration();
-        }
-      });
+      setState(() => _elapsedSeconds += 1);
+      if (_sensorUnavailable) _updateSteps(_currentSteps + 1);
     });
+    _persistSession();
+  }
+
+  void _updateSteps(int steps) {
+    setState(() {
+      _currentSteps = steps;
+      _recalculateMetrics();
+
+      // Check if goal was just passed
+      if (_currentSteps >= _stepGoal && !_hasPassedGoal) {
+        _hasPassedGoal = true;
+        _showGoalCompletedCelebration();
+      }
+    });
+    _persistSession();
   }
 
   void _pauseCounting() {
     _stepTimer?.cancel();
+    _stepSensor.stop();
     setState(() {
       _isActive = false;
     });
+    _persistSession();
   }
 
   void _recalculateMetrics() {
@@ -422,33 +540,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Speedometer Circular Arc Step Gauge (Screens 25, 26, 28, 29)
-                    SpeedometerGauge(
-                      currentSteps: _currentSteps,
-                      stepGoal: _stepGoal,
-                      isActive: _isActive,
-                      onToggle: _toggleStepCounting,
+                    FadeSlideIn(
+                      child: SpeedometerGauge(
+                        currentSteps: _currentSteps,
+                        stepGoal: _stepGoal,
+                        isActive: _isActive,
+                        onToggle: _toggleStepCounting,
+                      ),
                     ),
 
                     const SizedBox(height: 16),
 
                     // Activity Stats Row: Time, Calories, Distance
-                    DailyStatsRow(
-                      timeString: _formatDuration(_elapsedSeconds),
-                      caloriesString: '$_calories',
-                      distanceKmString: _distanceKm.toStringAsFixed(2),
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 120),
+                      child: DailyStatsRow(
+                        timeString: _formatDuration(_elapsedSeconds),
+                        caloriesString: '$_calories',
+                        distanceKmString: _distanceKm.toStringAsFixed(2),
+                      ),
                     ),
 
                     const SizedBox(height: 16),
 
                     // "Your Progress" Weekly Progress Card
-                    WeeklyProgressCard(
-                      days: _buildWeeklyProgress(),
-                      selectedPeriod: _selectedWeekPeriod,
-                      onPeriodChanged: (newPeriod) {
-                        setState(() {
-                          _selectedWeekPeriod = newPeriod;
-                        });
-                      },
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 240),
+                      child: WeeklyProgressCard(
+                        days: _buildWeeklyProgress(),
+                        selectedPeriod: _selectedWeekPeriod,
+                        onPeriodChanged: (newPeriod) {
+                          setState(() {
+                            _selectedWeekPeriod = newPeriod;
+                          });
+                        },
+                      ),
                     ),
 
                     const SizedBox(height: 24),

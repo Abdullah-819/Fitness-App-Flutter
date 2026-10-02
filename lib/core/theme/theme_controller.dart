@@ -16,6 +16,7 @@ class ThemeController extends ChangeNotifier {
       await Hive.initFlutter();
       final box = await Hive.openBox<String>(_boxName);
       _mode = _decode(box.get(_key));
+      notifyListeners();
     } catch (e) {
       debugPrint('ThemeController: could not load saved theme ($e)');
     }
