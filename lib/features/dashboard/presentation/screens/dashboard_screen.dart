@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/local_database.dart';
@@ -123,8 +124,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       setState(() {
         _elapsedSeconds += 1;
-        // Realistic step increment (approx 2 steps per second during active walk)
-        _currentSteps += 2;
+        // One step per tick
+        _currentSteps += 1;
         _recalculateMetrics();
 
         // Check if goal was just passed
@@ -278,10 +279,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final userName = widget.user?.name ?? 'Alex';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF5F5F5),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: const Padding(
           padding: EdgeInsets.only(left: 20),
           child: Center(
@@ -295,15 +298,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           'Home',
           style: TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
           ),
         ),
         centerTitle: true,
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(
-              Icons.more_vert,
+              LucideIcons.ellipsisVertical,
               color: AppColors.textPrimary,
             ),
             shape: RoundedRectangleBorder(
@@ -342,7 +345,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: 'perm_activity',
                 child: Row(
                   children: [
-                    Icon(Icons.directions_run_rounded, size: 20, color: AppColors.primaryPurple),
+                    Icon(LucideIcons.footprints, size: 20, color: AppColors.primaryPurple),
                     SizedBox(width: 12),
                     Text('Physical Activity Permission (23)'),
                   ],
@@ -352,7 +355,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: 'perm_location',
                 child: Row(
                   children: [
-                    Icon(Icons.location_on_rounded, size: 20, color: AppColors.primaryPurple),
+                    Icon(LucideIcons.mapPin, size: 20, color: AppColors.primaryPurple),
                     SizedBox(width: 12),
                     Text('Location Permission (24)'),
                   ],
@@ -384,7 +387,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: 'sign_out',
                 child: Row(
                   children: [
-                    Icon(Icons.logout_rounded, size: 20, color: Colors.redAccent),
+                    Icon(LucideIcons.logOut, size: 20, color: Colors.redAccent),
                     SizedBox(width: 12),
                     Text('Sign Out', style: TextStyle(color: Colors.redAccent)),
                   ],

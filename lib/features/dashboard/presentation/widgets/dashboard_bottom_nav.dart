@@ -41,7 +41,7 @@ class DashboardBottomNav extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _NavItem(
-                icon: LucideIcons.compass,
+                icon: LucideIcons.house,
                 label: 'Home',
                 isSelected: currentIndex == 0,
                 onTap: () => onTabSelected(0),
@@ -108,22 +108,22 @@ class _NavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isCustomHome && isSelected)
-              Container(
-                width: 28,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: activeColor,
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Center(
-                  child: Container(
-                    width: 10,
-                    height: 2,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(1),
+              SizedBox(
+                width: 26,
+                height: 24,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(Icons.home_rounded, size: 28, color: activeColor),
+                    Positioned(
+                      bottom: 5,
+                      child: Container(
+                        width: 7,
+                        height: 2,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               )
             else
