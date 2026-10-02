@@ -11,6 +11,7 @@ class AppAssets {
   static const String genderWoman = 'assets/images/gender_woman.png';
   static const String genderManSelected = 'assets/images/gender_man_selected.png';
   static const String sedentaryLifestyle = 'assets/images/sedentary_lifestyle.png';
+  static const String goalCompletionTrophy = 'assets/images/goal_completion_trophy.png';
 
   // Icons
   static const String logoWhite = 'assets/icons/app_logo_white.png';
