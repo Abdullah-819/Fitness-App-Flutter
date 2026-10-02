@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
@@ -37,38 +38,31 @@ class SpeedometerGauge extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
         child: SizedBox(
-          width: 270,
-          height: 270,
+          width: 300,
+          height: 300,
           child: Stack(
             alignment: Alignment.center,
             children: [
               // Custom arc gauge painter
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0.0, end: progress),
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOutCubic,
+                duration: const Duration(milliseconds: 900),
+                curve: Curves.easeOut,
                 builder: (context, animatedProgress, child) {
                   return CustomPaint(
-                    size: const Size(270, 270),
+                    size: const Size(300, 300),
                     painter: _SpeedometerPainter(
                       progress: animatedProgress,
                       primaryColor: AppColors.primaryPurple,
-                      trackColor: const Color(0xFFEBECEF),
-                      tickColor: const Color(0xFFD4D6DD),
+                      trackColor: const Color(0xFFEDEDED),
+                      tickColor: const Color(0xFFBDBDBD),
                     ),
                   );
                 },
@@ -76,37 +70,43 @@ class SpeedometerGauge extends StatelessWidget {
 
               // Central text information
               Positioned(
-                top: 48,
+                top: 92,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
                       'Steps',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
                         color: AppColors.textSecondary,
                         letterSpacing: 0.2,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      _formatNumber(currentSteps),
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -1.2,
-                        height: 1.1,
+                    TweenAnimationBuilder<int>(
+                      tween: IntTween(end: currentSteps),
+                      duration: const Duration(milliseconds: 900),
+                      curve: Curves.easeOut,
+                      builder: (context, value, child) => Text(
+                        _formatNumber(value),
+                        style: const TextStyle(
+                          fontSize: 64,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -1.2,
+                          height: 1.1,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '/${_formatNumber(stepGoal)}',
+                      '/$stepGoal',
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textLight,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textSecondary,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -116,7 +116,7 @@ class SpeedometerGauge extends StatelessWidget {
 
               // Center bottom Play/Pause button
               Positioned(
-                bottom: 12,
+                top: 212,
                 child: GestureDetector(
                   onTap: onToggle,
                   child: AnimatedContainer(
@@ -142,10 +142,10 @@ class SpeedometerGauge extends StatelessWidget {
                     child: Center(
                       child: Icon(
                         isActive
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
+                            ? LucideIcons.pause
+                            : LucideIcons.play,
                         color: isActive ? AppColors.primaryPurple : Colors.white,
-                        size: 32,
+                        size: 26,
                       ),
                     ),
                   ),
@@ -174,39 +174,56 @@ class _SpeedometerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2 - 8);
-    const radius = 108.0;
-    const strokeWidth = 24.0;
+    final center = Offset(size.width / 2, size.height / 2);
+    const radius = 120.0;
+    const strokeWidth = 30.0;
 
     // 270 degree arc from 135 deg to 405 deg
     const startAngle = 135 * (math.pi / 180);
     const totalSweep = 270 * (math.pi / 180);
 
-    // 1. Background inactive track
-    final trackPaint = Paint()
-      ..color = trackColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+    final trackRect = Rect.fromCircle(center: center, radius: radius);
 
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      totalSweep,
-      false,
-      trackPaint,
+    void arc(Rect rect, Paint paint, [double sweep = totalSweep]) =>
+        canvas.drawArc(rect, startAngle, sweep, false, paint);
+
+    Paint stroke(Color color, {double? width, double blur = 0}) => Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width ?? strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = blur > 0 ? MaskFilter.blur(BlurStyle.normal, blur) : null;
+
+    // 1. Embossed track: dark drop shadow (bottom-right), white highlight
+    // (top-left), then the soft grey body with a gentle sweep gradient.
+    arc(trackRect.shift(const Offset(4, 7)),
+        stroke(Colors.black.withValues(alpha: 0.16), blur: 8));
+    arc(trackRect.shift(const Offset(-3, -4)),
+        stroke(Colors.white, blur: 5));
+    arc(
+      trackRect,
+      stroke(trackColor)
+        ..shader = const SweepGradient(
+          startAngle: 0,
+          endAngle: totalSweep,
+          colors: [Color(0xFFF7F7F7), Color(0xFFECECEC), Color(0xFFE4E4E4)],
+          transform: GradientRotation(startAngle),
+        ).createShader(trackRect),
     );
+    // Inner rim light for the rounded "tube" look
+    arc(trackRect, stroke(Colors.white.withValues(alpha: 0.6),
+        width: strokeWidth - 18, blur: 3));
 
     // 2. Inner Radial Tick Marks
     final tickPaint = Paint()
       ..color = tickColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
+      ..strokeWidth = 1.6
       ..strokeCap = StrokeCap.round;
 
-    const tickCount = 20;
-    const tickInnerRadius = radius - 24.0;
-    const tickOuterRadius = radius - 16.0;
+    const tickCount = 10;
+    const tickInnerRadius = radius - 40.0;
+    const tickOuterRadius = radius - 32.0;
 
     for (int i = 0; i <= tickCount; i++) {
       final angle = startAngle + (i / tickCount) * totalSweep;
@@ -224,19 +241,9 @@ class _SpeedometerPainter extends CustomPainter {
     // 3. Active progress track
     if (progress > 0.0) {
       final activeSweep = totalSweep * progress.clamp(0.001, 1.0);
-      final activePaint = Paint()
-        ..color = primaryColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round;
-
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        activeSweep,
-        false,
-        activePaint,
-      );
+      arc(trackRect.shift(const Offset(0, 5)),
+          stroke(primaryColor.withValues(alpha: 0.35), blur: 7), activeSweep);
+      arc(trackRect, stroke(primaryColor), activeSweep);
     }
   }
 
