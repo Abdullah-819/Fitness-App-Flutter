@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 /// Bottom Navigation Bar matching the Dashboard Figma design (screens 25-29).
 ///
@@ -23,12 +23,13 @@ class DashboardBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: p.navBackground,
         border: Border(
           top: BorderSide(
-            color: Color(0xFFF0F1F5),
+            color: p.navBorder,
             width: 1.0,
           ),
         ),
@@ -96,8 +97,9 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = AppColors.primaryPurple;
-    final inactiveColor = const Color(0xFF8F9098);
+    final p = AppPalette.of(context);
+    final activeColor = p.navActive;
+    final inactiveColor = p.navInactive;
 
     return InkWell(
       onTap: onTap,

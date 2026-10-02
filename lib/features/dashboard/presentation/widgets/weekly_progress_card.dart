@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 /// Data model representing a single day in the weekly progress row.
 class DayProgressData {
@@ -34,11 +35,12 @@ class WeeklyProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: p.card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -48,12 +50,12 @@ class WeeklyProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Your Progress',
                 style: TextStyle(
                   fontSize: 19,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: p.textPrimary,
                   letterSpacing: -0.2,
                 ),
               ),
@@ -80,26 +82,26 @@ class WeeklyProgressCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: p.card,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE4E6EA)),
+                    border: Border.all(color: p.border),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         selectedPeriod,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: p.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(
+                      Icon(
                         LucideIcons.chevronDown,
                         size: 16,
-                        color: AppColors.textSecondary,
+                        color: p.textSecondary,
                       ),
                     ],
                   ),
@@ -109,7 +111,7 @@ class WeeklyProgressCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 14),
-          const Divider(height: 1, color: Color(0xFFEDEDED)),
+          Divider(height: 1, color: p.divider),
           const SizedBox(height: 14),
 
           // 7-day circular indicators row
@@ -130,6 +132,7 @@ class _DayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -145,7 +148,7 @@ class _DayItem extends StatelessWidget {
                   progress: data.progress,
                   isToday: data.isToday,
                   activeColor: AppColors.primaryPurple,
-                  trackColor: const Color(0xFFEBECEF),
+                  trackColor: p.ringTrack,
                 ),
               ),
               Text(
@@ -155,7 +158,7 @@ class _DayItem extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                   color: data.isToday
                       ? AppColors.primaryPurple
-                      : AppColors.textPrimary,
+                      : p.textPrimary,
                 ),
               ),
             ],
@@ -169,7 +172,7 @@ class _DayItem extends StatelessWidget {
             fontWeight: FontWeight.w400,
             color: data.isToday
                 ? AppColors.primaryPurple
-                : AppColors.textSecondary,
+                : p.textSecondary,
           ),
         ),
       ],
