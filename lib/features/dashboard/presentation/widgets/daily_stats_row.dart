@@ -22,17 +22,10 @@ class DailyStatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -99,8 +92,8 @@ class _StatColumn extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
             letterSpacing: -0.3,
           ),
@@ -111,9 +104,9 @@ class _StatColumn extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textLight,
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textSecondary,
           ),
         ),
       ],

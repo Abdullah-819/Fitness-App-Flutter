@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
@@ -35,17 +36,10 @@ class WeeklyProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,8 +51,8 @@ class WeeklyProgressCard extends StatelessWidget {
               const Text(
                 'Your Progress',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
                   letterSpacing: -0.2,
                 ),
@@ -103,8 +97,8 @@ class WeeklyProgressCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 18,
+                        LucideIcons.chevronDown,
+                        size: 16,
                         color: AppColors.textSecondary,
                       ),
                     ],
@@ -114,7 +108,9 @@ class WeeklyProgressCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: Color(0xFFEDEDED)),
+          const SizedBox(height: 14),
 
           // 7-day circular indicators row
           Row(
@@ -138,13 +134,13 @@ class _DayItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 40,
-          height: 40,
+          width: 42,
+          height: 42,
           child: Stack(
             alignment: Alignment.center,
             children: [
               CustomPaint(
-                size: const Size(40, 40),
+                size: const Size(42, 42),
                 painter: _DayRingPainter(
                   progress: data.progress,
                   isToday: data.isToday,
@@ -155,8 +151,8 @@ class _DayItem extends StatelessWidget {
               Text(
                 '${data.dayNumber}',
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
                   color: data.isToday
                       ? AppColors.primaryPurple
                       : AppColors.textPrimary,
@@ -169,8 +165,8 @@ class _DayItem extends StatelessWidget {
         Text(
           data.isToday ? 'Today' : data.dayName,
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: data.isToday ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
             color: data.isToday
                 ? AppColors.primaryPurple
                 : AppColors.textSecondary,
@@ -198,7 +194,7 @@ class _DayRingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 2.0;
-    const strokeWidth = 2.8;
+    const strokeWidth = 3.5;
 
     // Track
     final trackPaint = Paint()
