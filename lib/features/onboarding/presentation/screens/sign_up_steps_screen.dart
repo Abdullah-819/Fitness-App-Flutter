@@ -30,6 +30,21 @@ class SignUpStepsScreen extends StatefulWidget {
 }
 
 class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
+  // Realistic input ranges.
+  static const int _minAge = 13;
+  static const int _maxAge = 100;
+  static const int _minHeightCm = 120;
+  static const int _maxHeightCm = 230;
+  static const int _minHeightIn = 48; // 4'0"
+  static const int _maxHeightIn = 90; // 7'6"
+  static const int _minWeightKg = 30;
+  static const int _maxWeightKg = 200;
+  static const int _minWeightLbs = 66;
+  static const int _maxWeightLbs = 440;
+  static const int _minStepGoal = 2000;
+  static const int _maxStepGoal = 30000;
+  static const int _stepGoalIncrement = 500;
+
   late int _currentStep;
 
   // Step 1: Gender (Man / Woman)
@@ -289,6 +304,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
       ),
     );
   }
+
+  static List<int> _range(int min, int max) =>
+      List<int>.generate(max - min + 1, (i) => min + i);
 
   Widget _buildCurrentStepContent() {
     switch (_currentStep) {
@@ -616,7 +634,7 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
   // STEP 3: How Old Are You? (12_Light)
   // -------------------------------------------------------------
   Widget _buildAgeStep() {
-    final ageList = List.generate(85, (index) => 15 + index); // 15 to 99
+    final ageList = _range(_minAge, _maxAge);
 
     return Column(
       children: [
@@ -650,9 +668,10 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
   // STEP 4: What's Your Height? (13_Light)
   // -------------------------------------------------------------
   Widget _buildHeightStep() {
-    final heightList = _heightUnit == 'cm'
-        ? List.generate(100, (index) => 130 + index) // 130 to 229 cm
-        : List.generate(45, (index) => 50 + index); // 50 to 94 inches
+    final isCm = _heightUnit == 'cm';
+    final heightList = isCm
+        ? _range(_minHeightCm, _maxHeightCm)
+        : _range(_minHeightIn, _maxHeightIn); // inches, shown as feet'inches"
 
     return Column(
       children: [
@@ -672,12 +691,16 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
           activeUnit: _heightUnit,
           onUnitChanged: (unit) {
             setState(() {
+              if (unit == _heightUnit) return;
+              // Convert the current height instead of resetting it.
+              _selectedHeight = unit == 'cm'
+                  ? (_selectedHeight * 2.54)
+                      .round()
+                      .clamp(_minHeightCm, _maxHeightCm)
+                  : (_selectedHeight / 2.54)
+                      .round()
+                      .clamp(_minHeightIn, _maxHeightIn);
               _heightUnit = unit;
-              if (unit == 'cm' && _selectedHeight < 100) {
-                _selectedHeight = 185;
-              } else if (unit == 'ft' && _selectedHeight > 100) {
-                _selectedHeight = 73; // ~6'1"
-              }
             });
           },
         ),
@@ -690,6 +713,7 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
           values: heightList,
           initialValue: _selectedHeight,
           unit: _heightUnit,
+          labelBuilder: isCm ? null : (inches) => "${inches ~/ 12}'${inches % 12}\"",
           onChanged: (val) {
             setState(() {
               _selectedHeight = val;
@@ -706,8 +730,8 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
   // -------------------------------------------------------------
   Widget _buildWeightStep() {
     final weightList = _weightUnit == 'kg'
-        ? List.generate(140, (index) => 35 + index) // 35 to 174 kg
-        : List.generate(250, (index) => 80 + index); // 80 to 329 lbs
+        ? _range(_minWeightKg, _maxWeightKg)
+        : _range(_minWeightLbs, _maxWeightLbs);
 
     return Column(
       children: [
@@ -727,12 +751,16 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
           activeUnit: _weightUnit,
           onUnitChanged: (unit) {
             setState(() {
+              if (unit == _weightUnit) return;
+              // Convert the current weight instead of resetting it.
+              _selectedWeight = unit == 'kg'
+                  ? (_selectedWeight * 0.453592)
+                      .round()
+                      .clamp(_minWeightKg, _maxWeightKg)
+                  : (_selectedWeight / 0.453592)
+                      .round()
+                      .clamp(_minWeightLbs, _maxWeightLbs);
               _weightUnit = unit;
-              if (unit == 'kg' && _selectedWeight > 160) {
-                _selectedWeight = 76;
-              } else if (unit == 'lbs' && _selectedWeight < 100) {
-                _selectedWeight = 168;
-              }
             });
           },
         ),
@@ -760,8 +788,11 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
   // STEP 6: Set Your Step Goal (15_Light)
   // -------------------------------------------------------------
   Widget _buildStepGoalStep() {
-    // Increments of 500 from 3000 to 20000 steps
-    final goalList = List.generate(35, (index) => 3000 + (index * 500));
+    // Increments of 500 from 2,000 to 30,000 steps
+    final goalList = List.generate(
+      (_maxStepGoal - _minStepGoal) ~/ _stepGoalIncrement + 1,
+      (index) => _minStepGoal + index * _stepGoalIncrement,
+    );
 
     return Column(
       children: [
