@@ -48,6 +48,8 @@ dependencies:
 
   # Toast notifications
   fluttertoast: ^10.0.0
+  permission_handler: ^12.0.1
+  pedometer: ^4.2.0
 
 dev_dependencies:
   flutter_test:
