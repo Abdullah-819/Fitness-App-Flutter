@@ -6,3 +6,6 @@ export 'presentation/widgets/location_permission_dialog.dart';
 export 'presentation/widgets/physical_activity_permission_dialog.dart';
 export 'presentation/widgets/speedometer_gauge.dart';
 export 'presentation/widgets/weekly_progress_card.dart';
+export 'presentation/screens/account_view.dart';
+export 'presentation/widgets/account_menu_tile.dart';
+export 'presentation/widgets/appearance_sheet.dart';

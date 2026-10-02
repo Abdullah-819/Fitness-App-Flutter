@@ -1,8 +1,10 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 import '../../../../core/services/local_database.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
@@ -16,6 +18,7 @@ import '../widgets/location_permission_dialog.dart';
 import '../widgets/physical_activity_permission_dialog.dart';
 import '../widgets/speedometer_gauge.dart';
 import '../widgets/weekly_progress_card.dart';
+import 'account_view.dart';
 
 /// Complete Dashboard screen implementing all designs from `design/DashBoard/`:
 /// - Screen 23: Physical Activity Permission Request
@@ -93,7 +96,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _hasPromptedPermissions = true;
 
     // Show Physical Activity Permission (Screen 23)
-    final activityGranted = await PhysicalActivityPermissionDialog.show(context);
+    final activityGranted = await PhysicalActivityPermissionDialog.show(
+      context,
+    );
     if (!mounted) return;
 
     if (activityGranted == true) {
@@ -255,8 +260,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   List<DayProgressData> _buildWeeklyProgress() {
-    final todayProgress =
-        _stepGoal > 0 ? (_currentSteps / _stepGoal).clamp(0.0, 1.0) : 0.0;
+    final todayProgress = _stepGoal > 0
+        ? (_currentSteps / _stepGoal).clamp(0.0, 1.0)
+        : 0.0;
 
     return [
       const DayProgressData(dayName: 'Mon', dayNumber: 16, progress: 1.0),
@@ -276,28 +282,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userName = widget.user?.name ?? 'Alex';
+    final isAccount = _currentNavIndex == 4;
+    final palette = AppPalette.of(context);
+    final foreground = palette.textPrimary;
+    final surface = palette.background;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: const Padding(
           padding: EdgeInsets.only(left: 20),
           child: Center(
-            child: FootprintsIcon(
-              size: 28,
-              color: AppColors.primaryPurple,
-            ),
+            child: FootprintsIcon(size: 28, color: AppColors.primaryPurple),
           ),
         ),
-        title: const Text(
-          'Home',
+        title: Text(
+          isAccount ? 'Account' : 'Home',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: foreground,
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
@@ -305,10 +311,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         centerTitle: true,
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(
-              LucideIcons.ellipsisVertical,
-              color: AppColors.textPrimary,
-            ),
+            icon: Icon(LucideIcons.ellipsisVertical, color: foreground),
+            color: palette.card,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -345,7 +349,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: 'perm_activity',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.footprints, size: 20, color: AppColors.primaryPurple),
+                    Icon(
+                      LucideIcons.footprints,
+                      size: 20,
+                      color: AppColors.primaryPurple,
+                    ),
                     SizedBox(width: 12),
                     Text('Physical Activity Permission (23)'),
                   ],
@@ -355,7 +363,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: 'perm_location',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.mapPin, size: 20, color: AppColors.primaryPurple),
+                    Icon(
+                      LucideIcons.mapPin,
+                      size: 20,
+                      color: AppColors.primaryPurple,
+                    ),
                     SizedBox(width: 12),
                     Text('Location Permission (24)'),
                   ],
@@ -399,45 +411,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Speedometer Circular Arc Step Gauge (Screens 25, 26, 28, 29)
-              SpeedometerGauge(
-                currentSteps: _currentSteps,
-                stepGoal: _stepGoal,
-                isActive: _isActive,
-                onToggle: _toggleStepCounting,
+        child: isAccount
+            ? AccountView(user: widget.user, onLogout: _handleSignOut)
+            : SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Speedometer Circular Arc Step Gauge (Screens 25, 26, 28, 29)
+                    SpeedometerGauge(
+                      currentSteps: _currentSteps,
+                      stepGoal: _stepGoal,
+                      isActive: _isActive,
+                      onToggle: _toggleStepCounting,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Activity Stats Row: Time, Calories, Distance
+                    DailyStatsRow(
+                      timeString: _formatDuration(_elapsedSeconds),
+                      caloriesString: '$_calories',
+                      distanceKmString: _distanceKm.toStringAsFixed(2),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // "Your Progress" Weekly Progress Card
+                    WeeklyProgressCard(
+                      days: _buildWeeklyProgress(),
+                      selectedPeriod: _selectedWeekPeriod,
+                      onPeriodChanged: (newPeriod) {
+                        setState(() {
+                          _selectedWeekPeriod = newPeriod;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Activity Stats Row: Time, Calories, Distance
-              DailyStatsRow(
-                timeString: _formatDuration(_elapsedSeconds),
-                caloriesString: '$_calories',
-                distanceKmString: _distanceKm.toStringAsFixed(2),
-              ),
-
-              const SizedBox(height: 16),
-
-              // "Your Progress" Weekly Progress Card
-              WeeklyProgressCard(
-                days: _buildWeeklyProgress(),
-                selectedPeriod: _selectedWeekPeriod,
-                onPeriodChanged: (newPeriod) {
-                  setState(() {
-                    _selectedWeekPeriod = newPeriod;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
       ),
       bottomNavigationBar: DashboardBottomNav(
         currentIndex: _currentNavIndex,
@@ -445,7 +462,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _currentNavIndex = index;
           });
-          if (index != 0) {
+          if (index != 0 && index != 4) {
             final tabNames = ['Home', 'Track', 'Report', 'History', 'Account'];
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
