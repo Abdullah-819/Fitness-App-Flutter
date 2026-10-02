@@ -236,13 +236,13 @@ class _EnterOtpScreenState extends State<EnterOtpScreen> {
                     height: 70,
                     decoration: BoxDecoration(
                       color: isFocused
-                          ? const Color(0xFFF7F2FF)
+                          ? AppColors.lightPurpleBg
                           : const Color(0xFFF9FAFB),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isFocused
                             ? AppColors.primaryPurple
-                            : const Color(0xFFE5E7EB),
+                            : AppColors.stroke,
                         width: isFocused ? 2.0 : 1.2,
                       ),
                     ),

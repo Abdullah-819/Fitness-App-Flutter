@@ -3,6 +3,7 @@ class UserModel {
   final String email;
   final String name;
   final String? avatarUrl;
+  final String? phone;
   final String? gender;
   final bool? isSedentary;
   final int? age;
@@ -15,6 +16,7 @@ class UserModel {
     required this.email,
     required this.name,
     this.avatarUrl,
+    this.phone,
     this.gender,
     this.isSedentary,
     this.age,
@@ -28,6 +30,7 @@ class UserModel {
     String? email,
     String? name,
     String? avatarUrl,
+    String? phone,
     String? gender,
     bool? isSedentary,
     int? age,
@@ -40,6 +43,7 @@ class UserModel {
       email: email ?? this.email,
       name: name ?? this.name,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      phone: phone ?? this.phone,
       gender: gender ?? this.gender,
       isSedentary: isSedentary ?? this.isSedentary,
       age: age ?? this.age,

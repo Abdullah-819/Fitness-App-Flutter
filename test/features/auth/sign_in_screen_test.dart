@@ -45,6 +45,9 @@ void main() {
           home: SignInScreen(),
         ),
       );
+      await tester.tap(find.byKey(const Key('signup_method_email')));
+      await tester.pumpAndSettle();
+
 
       // Verify header texts
       expect(find.textContaining('Welcome Back!'), findsOneWidget);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/constants/app_colors.dart';
 
 /// Three-column daily activity statistics row (Time, Calories, Distance).
 ///
@@ -59,7 +60,7 @@ class DailyStatsRow extends StatelessWidget {
           Expanded(
             child: _StatColumn(
               icon: LucideIcons.mapPin,
-              iconColor: const Color(0xFF34C759),
+              iconColor: AppColors.success,
               value: distanceKmString,
               label: 'km',
             ),

@@ -168,7 +168,7 @@ class GoalCompletionDialog extends StatelessWidget {
                 Expanded(
                   child: _SummaryMetric(
                     icon: LucideIcons.mapPin,
-                    iconColor: const Color(0xFF34C759),
+                    iconColor: AppColors.success,
                     value: distanceKmString,
                     label: 'km',
                   ),

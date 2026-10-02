@@ -122,7 +122,7 @@ class WelcomeScreen extends StatelessWidget {
                         .push(AppPageRoute(page: const SignInScreen()));
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF3E8FF),
+                    backgroundColor: AppColors.lightPurpleBg,
                     foregroundColor: AppColors.primaryPurple,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
