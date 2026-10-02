@@ -178,14 +178,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
             border: const OutlineInputBorder(
               borderRadius: borderRadius,
               borderSide: BorderSide(
-                color: Color(0xFFE5E7EB),
+                color: AppColors.stroke,
                 width: 1.2,
               ),
             ),
             enabledBorder: const OutlineInputBorder(
               borderRadius: borderRadius,
               borderSide: BorderSide(
-                color: Color(0xFFE5E7EB),
+                color: AppColors.stroke,
                 width: 1.2,
               ),
             ),
@@ -199,21 +199,21 @@ class _CustomTextFieldState extends State<CustomTextField> {
             errorBorder: const OutlineInputBorder(
               borderRadius: borderRadius,
               borderSide: BorderSide(
-                color: Color(0xFFEF4444),
+                color: AppColors.danger,
                 width: 1.2,
               ),
             ),
             focusedErrorBorder: const OutlineInputBorder(
               borderRadius: borderRadius,
               borderSide: BorderSide(
-                color: Color(0xFFEF4444),
+                color: AppColors.danger,
                 width: 1.8,
               ),
             ),
             errorStyle: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: Color(0xFFEF4444),
+              color: AppColors.danger,
             ),
           ),
         ),

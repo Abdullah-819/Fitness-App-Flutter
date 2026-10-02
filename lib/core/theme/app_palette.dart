@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+
 /// Light / dark colour set used by the dashboard feature screens.
 ///
 /// Read the active set with [AppPalette.of], which follows the current
@@ -38,19 +40,19 @@ class AppPalette {
   });
 
   static const AppPalette light = AppPalette(
-    background: Color(0xFFF5F5F5),
+    background: AppColors.backgroundMain,
     card: Colors.white,
-    divider: Color(0xFFEDEDED),
-    textPrimary: Color(0xFF1E1E2D),
-    textSecondary: Color(0xFF71727A),
-    ringTrack: Color(0xFFEDEDED),
-    ringTick: Color(0xFFBDBDBD),
+    divider: AppColors.stroke1,
+    textPrimary: AppColors.textPrimary,
+    textSecondary: AppColors.textSecondary,
+    ringTrack: AppColors.backgroundMain,
+    ringTick: AppColors.stroke,
     navBackground: Colors.white,
-    navBorder: Color(0xFFF0F1F5),
-    navInactive: Color(0xFF8F9098),
-    navActive: Color(0xFF7F27FF),
-    border: Color(0xFFE4E6EA),
-    danger: Color(0xFFFF5C5C),
+    navBorder: AppColors.stroke1,
+    navInactive: AppColors.icon3,
+    navActive: AppColors.primaryPurple,
+    border: AppColors.stroke,
+    danger: AppColors.danger,
     isDark: false,
   );
 
@@ -67,7 +69,7 @@ class AppPalette {
     navInactive: Color(0xFFB8BAC4),
     navActive: Colors.white,
     border: Color(0xFF3A3C48),
-    danger: Color(0xFFFF5C5C),
+    danger: AppColors.danger,
     isDark: true,
   );
 

@@ -248,7 +248,7 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
                         key: const Key('step_skip_button'),
                         onPressed: _handleSkip,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF5EEFF),
+                          backgroundColor: AppColors.lightPurpleBg,
                           foregroundColor: AppColors.primaryPurple,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -905,7 +905,7 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
               border: Border.all(
                 color: isLeft
                     ? AppColors.primaryPurple
-                    : const Color(0xFFE5E7EB),
+                    : AppColors.stroke,
                 width: 1.2,
               ),
             ),
@@ -934,7 +934,7 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
               border: Border.all(
                 color: !isLeft
                     ? AppColors.primaryPurple
-                    : const Color(0xFFE5E7EB),
+                    : AppColors.stroke,
                 width: 1.2,
               ),
             ),
