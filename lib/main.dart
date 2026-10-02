@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'core/constants/app_colors.dart';
+import 'core/theme/theme_controller.dart';
 import 'features/onboarding/presentation/screens/walkthrough_screen.dart';
 import 'features/splash/presentation/screens/splash_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const StepCounterApp());
+  final themeController = ThemeController();
+  await themeController.load();
+  runApp(
+    ChangeNotifierProvider<ThemeController>.value(
+      value: themeController,
+      child: const StepCounterApp(),
+    ),
+  );
 }
 
 class StepCounterApp extends StatelessWidget {
@@ -14,17 +23,22 @@ class StepCounterApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData buildTheme(Brightness brightness) => ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primaryPurple,
+            primary: AppColors.primaryPurple,
+            brightness: brightness,
+          ),
+          scaffoldBackgroundColor: AppColors.primaryPurple,
+        );
+
     return MaterialApp(
       title: 'TrackFit',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryPurple,
-          primary: AppColors.primaryPurple,
-        ),
-        scaffoldBackgroundColor: AppColors.primaryPurple,
-      ),
+      themeMode: context.watch<ThemeController>().mode,
+      theme: buildTheme(Brightness.light),
+      darkTheme: buildTheme(Brightness.dark),
       home: Builder(
         builder: (context) {
           return SplashScreen(
