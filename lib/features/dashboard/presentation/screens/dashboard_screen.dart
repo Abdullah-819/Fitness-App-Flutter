@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/services/local_database.dart';
@@ -64,12 +65,18 @@ class _DashboardScreenState extends State<DashboardScreen>
   String _selectedWeekPeriod = 'This Week';
   bool _hasPromptedPermissions = false;
 
+  /// Saved step totals per day (yyyy-mm-dd), used for weekly progress.
+  Map<String, int> _history = {};
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // Resolve the goal first so restored steps are compared against it.
     _loadUserGoal().then((_) => _restoreSession());
+    StepSessionStore.instance.loadHistory().then((history) {
+      if (mounted) setState(() => _history = history);
+    });
 
     // Check permissions after first frame
     // Let the dashboard animate in before showing a dialog on top of it.
@@ -155,6 +162,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _persistSession() {
+    final today = StepSession.dayKey(DateTime.now());
+    _history[today] = _currentSteps;
+    StepSessionStore.instance.saveDayTotal(today, _currentSteps);
     StepSessionStore.instance.save(
       StepSession(
         day: StepSession.dayKey(DateTime.now()),
@@ -386,7 +396,44 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  /// Lifetime level: one level per 50,000 steps (staging shows a fixed 9).
+  int get _level {
+    if (AppConfig.isStaging) return 9;
+    final todayKey = StepSession.dayKey(DateTime.now());
+    var total = _currentSteps;
+    _history.forEach((day, steps) {
+      if (day != todayKey) total += steps;
+    });
+    return 1 + total ~/ 50000;
+  }
+
+  /// Real last-7-days progress from saved totals (production).
   List<DayProgressData> _buildWeeklyProgress() {
+    if (AppConfig.isStaging) return _mockWeeklyProgress();
+
+    const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return [
+      for (var i = 6; i >= 0; i--)
+        () {
+          final date = today.subtract(Duration(days: i));
+          final steps = i == 0
+              ? _currentSteps
+              : (_history[StepSession.dayKey(date)] ?? 0);
+          return DayProgressData(
+            dayName: names[date.weekday - 1],
+            dayNumber: date.day,
+            progress: _stepGoal > 0 ? (steps / _stepGoal).clamp(0.0, 1.0) : 0.0,
+            isToday: i == 0,
+          );
+        }(),
+    ];
+  }
+
+  /// Fixed sample week used by the staging build.
+  List<DayProgressData> _mockWeeklyProgress() {
     final todayProgress = _stepGoal > 0
         ? (_currentSteps / _stepGoal).clamp(0.0, 1.0)
         : 0.0;
@@ -471,57 +518,60 @@ class _DashboardScreenState extends State<DashboardScreen>
                   break;
               }
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: 'perm_activity',
-                child: Row(
-                  children: [
-                    Icon(
-                      LucideIcons.footprints,
-                      size: 20,
-                      color: AppColors.primaryPurple,
-                    ),
-                    SizedBox(width: 12),
-                    Text('Physical Activity Permission (23)'),
-                  ],
+            itemBuilder: (context) => [
+              // Test helpers: staging build only
+              if (AppConfig.isStaging) ...[
+                PopupMenuItem(
+                  value: 'perm_activity',
+                  child: Row(
+                    children: [
+                      Icon(
+                        LucideIcons.footprints,
+                        size: 20,
+                        color: AppColors.primaryPurple,
+                      ),
+                      SizedBox(width: 12),
+                      Text('Physical Activity Permission (23)'),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'perm_location',
-                child: Row(
-                  children: [
-                    Icon(
-                      LucideIcons.mapPin,
-                      size: 20,
-                      color: AppColors.primaryPurple,
-                    ),
-                    SizedBox(width: 12),
-                    Text('Location Permission (24)'),
-                  ],
+                PopupMenuItem(
+                  value: 'perm_location',
+                  child: Row(
+                    children: [
+                      Icon(
+                        LucideIcons.mapPin,
+                        size: 20,
+                        color: AppColors.primaryPurple,
+                      ),
+                      SizedBox(width: 12),
+                      Text('Location Permission (24)'),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuDivider(),
-              PopupMenuItem(
-                value: 'sim_default',
-                child: Text('State 25: Home Default (0 Steps)'),
-              ),
-              PopupMenuItem(
-                value: 'sim_active',
-                child: Text('State 26: Active (4,805 Steps)'),
-              ),
-              PopupMenuItem(
-                value: 'sim_modal',
-                child: Text('State 27: Goal Passed Celebration (6,000)'),
-              ),
-              PopupMenuItem(
-                value: 'sim_exceeded',
-                child: Text('State 28: Goal Exceeded (6,496 Steps)'),
-              ),
-              PopupMenuItem(
-                value: 'sim_stopped',
-                child: Text('State 29: Stopped Goal Passed (6,000)'),
-              ),
-              PopupMenuDivider(),
+                PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 'sim_default',
+                  child: Text('State 25: Home Default (0 Steps)'),
+                ),
+                PopupMenuItem(
+                  value: 'sim_active',
+                  child: Text('State 26: Active (4,805 Steps)'),
+                ),
+                PopupMenuItem(
+                  value: 'sim_modal',
+                  child: Text('State 27: Goal Passed Celebration (6,000)'),
+                ),
+                PopupMenuItem(
+                  value: 'sim_exceeded',
+                  child: Text('State 28: Goal Exceeded (6,496 Steps)'),
+                ),
+                PopupMenuItem(
+                  value: 'sim_stopped',
+                  child: Text('State 29: Stopped Goal Passed (6,000)'),
+                ),
+                PopupMenuDivider(),
+              ],
               PopupMenuItem(
                 value: 'sign_out',
                 child: Row(
@@ -539,7 +589,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       body: SafeArea(
         child: isAccount
-            ? AccountView(user: widget.user, onLogout: _handleSignOut)
+            ? AccountView(
+                user: widget.user,
+                level: _level,
+                onLogout: _handleSignOut,
+              )
             : SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
