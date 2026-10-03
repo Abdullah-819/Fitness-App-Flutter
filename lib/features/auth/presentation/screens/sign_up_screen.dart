@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/navigation/page_transitions.dart';
 import '../../../../core/utils/app_toast.dart';
@@ -507,20 +508,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'fill',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.person_add_outlined,
-                      size: 20,
-                      color: AppColors.primaryPurple,
-                    ),
-                    SizedBox(width: 10),
-                    Text('Auto-fill Demo User'),
-                  ],
+              if (AppConfig.isStaging)
+                const PopupMenuItem(
+                  value: 'fill',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.person_add_outlined,
+                        size: 20,
+                        color: AppColors.primaryPurple,
+                      ),
+                      SizedBox(width: 10),
+                      Text('Auto-fill Demo User'),
+                    ],
+                  ),
                 ),
-              ),
               const PopupMenuItem(
                 value: 'terms',
                 child: Row(
@@ -591,49 +593,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 16),
 
-                // Helper banner to select demo credentials
-                GestureDetector(
-                  onTap: _showTeamMemberPicker,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 11,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryPurple.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.primaryPurple.withValues(alpha: 0.25),
+                // Helper banner to select demo credentials (staging only)
+                if (AppConfig.isStaging)
+                  GestureDetector(
+                    onTap: _showTeamMemberPicker,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 11,
                       ),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(
-                          LucideIcons.userPlus,
-                          size: 18,
-                          color: AppColors.primaryPurple,
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Tap to auto-fill demo or team account credentials',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              color: AppColors.primaryPurple,
-                              fontWeight: FontWeight.w600,
-                            ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryPurple.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.primaryPurple.withValues(
+                            alpha: 0.25,
                           ),
                         ),
-                        Icon(
-                          LucideIcons.chevronDown,
-                          size: 18,
-                          color: AppColors.primaryPurple,
-                        ),
-                      ],
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            LucideIcons.userPlus,
+                            size: 18,
+                            color: AppColors.primaryPurple,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Tap to auto-fill demo or team account credentials',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: AppColors.primaryPurple,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            LucideIcons.chevronDown,
+                            size: 18,
+                            color: AppColors.primaryPurple,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
                 const SizedBox(height: 22),
 

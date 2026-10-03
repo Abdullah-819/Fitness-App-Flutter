@@ -129,6 +129,9 @@ class _SignUpStepsScreenState extends State<SignUpStepsScreen> {
       dailyStepGoal: _selectedStepGoal,
     );
 
+    // Remember the profile so the user stays signed in with it.
+    await AuthService.instance.updateCurrentUser(updatedUser);
+
     // 2. Persist daily step goal so the dashboard shows the same target
     await StepSessionStore.instance.saveGoal(_selectedStepGoal);
     try {

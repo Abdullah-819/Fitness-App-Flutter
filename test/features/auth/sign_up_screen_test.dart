@@ -6,8 +6,11 @@ import 'package:step_counter/features/auth/presentation/screens/sign_in_screen.d
 import 'package:step_counter/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:step_counter/features/auth/presentation/widgets/auth_form_icons.dart';
 import 'package:step_counter/features/onboarding/presentation/screens/sign_up_steps_screen.dart';
+import '../../helpers/memory_hive.dart';
 
 void main() {
+  setUp(openMemoryBoxes);
+
   group('AuthService SignUp Tests', () {
     test('signUp creates new user with valid email and password', () async {
       final user = await AuthService.instance.signUp(

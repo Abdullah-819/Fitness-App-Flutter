@@ -3,8 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:step_counter/features/auth/domain/models/user_model.dart';
 import 'package:step_counter/features/dashboard/dashboard.dart';
 import 'package:step_counter/features/home/presentation/screens/home_screen.dart';
+import '../../helpers/memory_hive.dart';
 
 void main() {
+  setUp(openMemoryBoxes);
+
   const testUser = UserModel(
     id: 'test_user_id',
     name: 'Alex Johnson',

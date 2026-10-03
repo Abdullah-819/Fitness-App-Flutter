@@ -19,7 +19,7 @@ class PkPhone {
     return digits;
   }
 
-  /// A valid mobile number is 10 digits starting with 3 (e.g. 300 6789089).
+  /// A valid mobile number is 10 digits starting with 3 (e.g. 306 1848755).
   static bool isValid(String input) =>
       RegExp(r'^3\d{9}$').hasMatch(national(input));
 
@@ -27,7 +27,7 @@ class PkPhone {
   static String e164(String input) => '$dialCode${national(input)}';
 }
 
-/// Formats typed digits as `0300 678 9089` (or `300 678 9089` without a 0).
+/// Formats typed digits as `0306 1848755` (or `306 1848755` without a 0).
 class _PkPhoneFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -43,7 +43,7 @@ class _PkPhoneFormatter extends TextInputFormatter {
     final firstGroup = trimmed.startsWith('0') ? 4 : 3;
     final buffer = StringBuffer();
     for (var i = 0; i < trimmed.length; i++) {
-      if (i == firstGroup || i == firstGroup + 3) buffer.write(' ');
+      if (i == firstGroup) buffer.write(' ');
       buffer.write(trimmed[i]);
     }
     final text = buffer.toString();
@@ -131,12 +131,12 @@ class _PhoneNumberFieldState extends State<PhoneNumberField> {
               return 'Please enter your phone number';
             }
             if (!PkPhone.isValid(value)) {
-              return 'Enter a valid number, e.g. 0300 678 9089';
+              return 'Enter a valid number, e.g. 0306 1848755';
             }
             return null;
           },
           decoration: InputDecoration(
-            hintText: '0300 678 9089',
+            hintText: '0306 1848755',
             hintStyle: const TextStyle(
               fontSize: 14.5,
               fontWeight: FontWeight.w400,
@@ -187,7 +187,10 @@ class _CountryPrefix extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.backgroundSecondary,
             ),
-            child: const Text('\u{1F1F5}\u{1F1F0}', style: TextStyle(fontSize: 16)),
+            child: const Text(
+              '\u{1F1F5}\u{1F1F0}',
+              style: TextStyle(fontSize: 16),
+            ),
           ),
           const SizedBox(width: 8),
           const Text(

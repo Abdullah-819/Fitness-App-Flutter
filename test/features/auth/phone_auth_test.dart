@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:step_counter/features/auth/presentation/widgets/password_rules_checklist.dart';
 import 'package:step_counter/features/auth/presentation/widgets/phone_number_field.dart';
@@ -5,16 +6,16 @@ import 'package:step_counter/features/auth/presentation/widgets/phone_number_fie
 void main() {
   group('PkPhone', () {
     test('normalises common Pakistani number formats', () {
-      expect(PkPhone.e164('0300 678 9089'), '+923006789089');
-      expect(PkPhone.e164('300 678 9089'), '+923006789089');
-      expect(PkPhone.e164('+92 300 6789089'), '+923006789089');
-      expect(PkPhone.e164('923006789089'), '+923006789089');
+      expect(PkPhone.e164('0306 1848755'), '+923061848755');
+      expect(PkPhone.e164('306 1848755'), '+923061848755');
+      expect(PkPhone.e164('+92 306 1848755'), '+923061848755');
+      expect(PkPhone.e164('923061848755'), '+923061848755');
     });
 
     test('accepts only 10-digit mobile numbers starting with 3', () {
-      expect(PkPhone.isValid('0300 678 9089'), isTrue);
-      expect(PkPhone.isValid('0200 678 9089'), isFalse);
-      expect(PkPhone.isValid('0300 678 908'), isFalse);
+      expect(PkPhone.isValid('0306 1848755'), isTrue);
+      expect(PkPhone.isValid('0206 1848755'), isFalse);
+      expect(PkPhone.isValid('0306 184875'), isFalse);
       expect(PkPhone.isValid(''), isFalse);
     });
   });
@@ -27,5 +28,28 @@ void main() {
       expect(PasswordRules.allPassed('Abcdefg1'), isFalse); // no special
       expect(PasswordRules.allPassed('Ab1@'), isFalse); // too short
     });
+  });
+
+  testWidgets('PhoneNumberField formats as 0306 1848755', (tester) async {
+    final controller = TextEditingController();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: PhoneNumberField(controller: controller)),
+      ),
+    );
+
+    await tester.enterText(find.byKey(const Key('phone_field')), '03061848755');
+    expect(controller.text, '0306 1848755');
+
+    // Extra digits are ignored (max 11 digits with the leading 0).
+    await tester.enterText(
+      find.byKey(const Key('phone_field')),
+      '030618487559999',
+    );
+    expect(controller.text, '0306 1848755');
+
+    // Partial input groups after the first 4 digits only.
+    await tester.enterText(find.byKey(const Key('phone_field')), '03061');
+    expect(controller.text, '0306 1');
   });
 }

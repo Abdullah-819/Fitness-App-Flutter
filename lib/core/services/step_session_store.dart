@@ -70,6 +70,43 @@ class StepSessionStore {
   }
 
   static const String _goalKey = 'daily_step_goal';
+  static const String _historyKey = 'daily_totals';
+
+  /// Records the step total for one day (yyyy-mm-dd) for weekly progress.
+  Future<void> saveDayTotal(String day, int steps) async {
+    try {
+      final box = await _box();
+      final map = Map<String, int>.from(
+        (box.get(_historyKey) ?? const {}).map(
+          (k, v) => MapEntry(k as String, v as int),
+        ),
+      );
+      map[day] = steps;
+      // Keep roughly the last four months.
+      if (map.length > 120) {
+        final keys = map.keys.toList()..sort();
+        for (final k in keys.take(map.length - 120)) {
+          map.remove(k);
+        }
+      }
+      await box.put(_historyKey, map);
+    } catch (e) {
+      debugPrint('StepSessionStore: saveDayTotal failed ($e)');
+    }
+  }
+
+  /// All saved daily totals keyed by yyyy-mm-dd.
+  Future<Map<String, int>> loadHistory() async {
+    try {
+      final box = await _box();
+      return (box.get(_historyKey) ?? const {}).map(
+        (k, v) => MapEntry(k as String, v as int),
+      );
+    } catch (e) {
+      debugPrint('StepSessionStore: loadHistory failed ($e)');
+      return {};
+    }
+  }
 
   /// Remembers the daily step goal chosen during onboarding.
   Future<void> saveGoal(int goal) async {
