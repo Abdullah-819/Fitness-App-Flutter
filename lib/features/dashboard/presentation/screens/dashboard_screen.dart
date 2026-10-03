@@ -67,10 +67,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Saved step totals per day (yyyy-mm-dd), used for weekly progress.
   Map<String, int> _history = {};
+  UserModel? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _currentUser = widget.user ?? AuthService.instance.currentUser;
     WidgetsBinding.instance.addObserver(this);
     // Resolve the goal first so restored steps are compared against it.
     _loadUserGoal().then((_) => _restoreSession());
@@ -97,6 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// then the saved goal, then the goals database, then 6,000.
   Future<void> _loadUserGoal() async {
     int? goal =
+        _currentUser?.dailyStepGoal ??
         widget.user?.dailyStepGoal ??
         AuthService.instance.currentUser?.dailyStepGoal;
 
@@ -590,9 +593,17 @@ class _DashboardScreenState extends State<DashboardScreen>
       body: SafeArea(
         child: isAccount
             ? AccountView(
-                user: widget.user,
+                user: _currentUser ?? widget.user ?? AuthService.instance.currentUser,
                 level: _level,
                 onLogout: _handleSignOut,
+                onUserUpdated: (updated) {
+                  setState(() {
+                    _currentUser = updated;
+                    if (updated.dailyStepGoal != null && updated.dailyStepGoal! > 0) {
+                      _stepGoal = updated.dailyStepGoal!;
+                    }
+                  });
+                },
               )
             : SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(

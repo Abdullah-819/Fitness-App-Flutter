@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/navigation/page_transitions.dart';
 import '../../../../core/utils/app_toast.dart';
+import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
+import '../../../settings/presentation/screens/personal_info_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../widgets/account_menu_tile.dart';
 import '../widgets/appearance_sheet.dart';
@@ -15,89 +18,29 @@ class AccountView extends StatelessWidget {
   final UserModel? user;
   final int level;
   final VoidCallback onLogout;
+  final ValueChanged<UserModel>? onUserUpdated;
 
   const AccountView({
     super.key,
     required this.user,
     required this.onLogout,
     this.level = 9,
+    this.onUserUpdated,
   });
 
   void _comingSoon(String feature) => AppToast.info('$feature coming soon');
 
-  void _showPersonalInfo(BuildContext context) {
-    final p = AppPalette.of(context);
-    final u = user;
-    final rows = <MapEntry<String, String>>[
-      MapEntry('Name', u?.name ?? '-'),
-      MapEntry('Email', u?.email ?? '-'),
-      if (u?.phone != null) MapEntry('Phone', u!.phone!),
-      MapEntry('Gender', u?.gender ?? '-'),
-      MapEntry('Age', u?.age?.toString() ?? '-'),
-      MapEntry('Height', u?.heightCm != null ? '${u!.heightCm} cm' : '-'),
-      MapEntry('Weight', u?.weightKg != null ? '${u!.weightKg} kg' : '-'),
-      MapEntry('Daily goal',
-          u?.dailyStepGoal != null ? '${u!.dailyStepGoal} steps' : '-'),
-    ];
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: p.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Personal Info',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: p.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              for (final row in rows)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          row.key,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: p.textSecondary,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          row.value,
-                          textAlign: TextAlign.end,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: p.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
+  Future<void> _openPersonalInfo(BuildContext context) async {
+    final updated = await Navigator.of(context).push<UserModel>(
+      AppPageRoute(
+        page: PersonalInfoScreen(
+          user: user ?? AuthService.instance.currentUser,
         ),
       ),
     );
+    if (updated != null) {
+      onUserUpdated?.call(updated);
+    }
   }
 
   Future<void> _confirmLogout(BuildContext context) async {
@@ -167,7 +110,7 @@ class AccountView extends StatelessWidget {
             AccountMenuTile(
               icon: LucideIcons.user,
               label: 'Personal Info',
-              onTap: () => _showPersonalInfo(context),
+              onTap: () => _openPersonalInfo(context),
             ),
             AccountMenuTile(
               icon: LucideIcons.shieldCheck,
