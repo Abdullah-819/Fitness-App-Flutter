@@ -11,9 +11,11 @@ import '../../../../core/theme/app_palette.dart';
 import '../../../../core/utils/app_toast.dart';
 import '../../../dashboard/presentation/widgets/location_permission_dialog.dart';
 import '../../data/track_config.dart';
+import '../../data/track_map_style.dart';
 import '../providers/track_provider.dart';
 import '../widgets/track_active_stats_sheet.dart';
 import '../widgets/track_locate_button.dart';
+import '../widgets/track_map_style_button.dart';
 import '../widgets/track_map_view.dart';
 import '../widgets/track_start_button.dart';
 import '../widgets/track_summary_dialog.dart';
@@ -31,6 +33,7 @@ class TrackScreen extends StatefulWidget {
 class _TrackScreenState extends State<TrackScreen> {
   final MapController _mapController = MapController();
   bool _hasCheckedPermission = false;
+  TrackMapStyle _mapStyle = TrackMapStyle.standard;
 
   @override
   void initState() {
@@ -178,11 +181,24 @@ class _TrackScreenState extends State<TrackScreen> {
                 currentPosition: track.currentPosition,
                 startPosition: track.startPosition,
                 isTracking: track.isTracking,
+                mapStyle: _mapStyle,
+                // Keep the credit clear of START button / stats sheet.
+                bottomInset: track.isTracking ? 215 : 90,
                 onPositionChanged: (camera, hasGesture) {
                   if (hasGesture) {
                     track.setAutoFollow(false);
                   }
                 },
+              ),
+            ),
+
+            // Map type switcher (Standard / Satellite / Terrain), top right
+            Positioned(
+              right: 20,
+              top: 16,
+              child: TrackMapStyleButton(
+                style: _mapStyle,
+                onChanged: (style) => setState(() => _mapStyle = style),
               ),
             ),
 

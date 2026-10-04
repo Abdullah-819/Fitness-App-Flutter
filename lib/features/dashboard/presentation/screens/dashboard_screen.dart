@@ -38,8 +38,9 @@ import 'account_view.dart';
 /// - Screen 29: Home - Steps counter stopped - Step goal passed
 class DashboardScreen extends StatefulWidget {
   final UserModel? user;
+  final TrackProvider? trackProvider;
 
-  const DashboardScreen({super.key, this.user});
+  const DashboardScreen({super.key, this.user, this.trackProvider});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -77,7 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   void initState() {
     super.initState();
     _currentUser = widget.user ?? AuthService.instance.currentUser;
-    _trackProvider = TrackProvider();
+    _trackProvider = widget.trackProvider ?? TrackProvider();
     WidgetsBinding.instance.addObserver(this);
     // Resolve the goal first so restored steps are compared against it.
     _loadUserGoal().then((_) => _restoreSession());
@@ -97,7 +98,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     WidgetsBinding.instance.removeObserver(this);
     _stepTimer?.cancel();
     _stepSensor.stop();
-    _trackProvider.dispose();
+    if (widget.trackProvider == null) {
+      _trackProvider.dispose();
+    }
     super.dispose();
   }
 
@@ -465,10 +468,27 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isAccount = _currentNavIndex == 4;
     final palette = AppPalette.of(context);
     final foreground = palette.textPrimary;
     final surface = palette.background;
+
+    final String titleText;
+    switch (_currentNavIndex) {
+      case 1:
+        titleText = 'Track';
+        break;
+      case 2:
+        titleText = 'Report';
+        break;
+      case 3:
+        titleText = 'History';
+        break;
+      case 4:
+        titleText = 'Account';
+        break;
+      default:
+        titleText = 'Home';
+    }
 
     return Scaffold(
       backgroundColor: surface,
@@ -484,7 +504,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
         title: Text(
-          isAccount ? 'Account' : 'Home',
+          titleText,
           style: TextStyle(
             color: foreground,
             fontSize: 22,
@@ -522,6 +542,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                 case 'sim_stopped':
                   _simulateStoppedPassedState();
                   break;
+                case 'sim_track_walk':
+                  _trackProvider.startTracking(simulateInStaging: true);
+                  break;
                 case 'sign_out':
                   _handleSignOut();
                   break;
@@ -530,7 +553,22 @@ class _DashboardScreenState extends State<DashboardScreen>
             itemBuilder: (context) => [
               // Test helpers: staging build only
               if (AppConfig.isStaging) ...[
-                PopupMenuItem(
+                if (_currentNavIndex == 1)
+                  const PopupMenuItem(
+                    value: 'sim_track_walk',
+                    child: Row(
+                      children: [
+                        Icon(
+                          LucideIcons.route,
+                          size: 20,
+                          color: AppColors.primaryPurple,
+                        ),
+                        SizedBox(width: 12),
+                        Text('Simulate GPS Walk (30/31)'),
+                      ],
+                    ),
+                  ),
+                const PopupMenuItem(
                   value: 'perm_activity',
                   child: Row(
                     children: [
@@ -544,7 +582,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ],
                   ),
                 ),
-                PopupMenuItem(
+                const PopupMenuItem(
                   value: 'perm_location',
                   child: Row(
                     children: [
@@ -558,30 +596,30 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ],
                   ),
                 ),
-                PopupMenuDivider(),
-                PopupMenuItem(
+                const PopupMenuDivider(),
+                const PopupMenuItem(
                   value: 'sim_default',
                   child: Text('State 25: Home Default (0 Steps)'),
                 ),
-                PopupMenuItem(
+                const PopupMenuItem(
                   value: 'sim_active',
                   child: Text('State 26: Active (4,805 Steps)'),
                 ),
-                PopupMenuItem(
+                const PopupMenuItem(
                   value: 'sim_modal',
                   child: Text('State 27: Goal Passed Celebration (6,000)'),
                 ),
-                PopupMenuItem(
+                const PopupMenuItem(
                   value: 'sim_exceeded',
                   child: Text('State 28: Goal Exceeded (6,496 Steps)'),
                 ),
-                PopupMenuItem(
+                const PopupMenuItem(
                   value: 'sim_stopped',
                   child: Text('State 29: Stopped Goal Passed (6,000)'),
                 ),
-                PopupMenuDivider(),
+                const PopupMenuDivider(),
               ],
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'sign_out',
                 child: Row(
                   children: [
@@ -597,74 +635,33 @@ class _DashboardScreenState extends State<DashboardScreen>
         ],
       ),
       body: SafeArea(
-        child: isAccount
-            ? AccountView(
-                user:
-                    _currentUser ??
-                    widget.user ??
-                    AuthService.instance.currentUser,
+        top: _currentNavIndex != 1,
+        bottom: false,
+        child: ChangeNotifierProvider<TrackProvider>.value(
+          value: _trackProvider,
+          child: IndexedStack(
+            index: _currentNavIndex,
+            children: [
+              _buildHomeTab(),
+              const TrackScreen(),
+              _buildPlaceholderTab('Report'),
+              _buildPlaceholderTab('History'),
+              AccountView(
+                user: _currentUser ?? widget.user ?? AuthService.instance.currentUser,
                 level: _level,
                 onLogout: _handleSignOut,
                 onUserUpdated: (updated) {
                   setState(() {
                     _currentUser = updated;
-                    if (updated.dailyStepGoal != null &&
-                        updated.dailyStepGoal! > 0) {
+                    if (updated.dailyStepGoal != null && updated.dailyStepGoal! > 0) {
                       _stepGoal = updated.dailyStepGoal!;
                     }
                   });
                 },
-              )
-            : SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Speedometer Circular Arc Step Gauge (Screens 25, 26, 28, 29)
-                    FadeSlideIn(
-                      child: SpeedometerGauge(
-                        currentSteps: _currentSteps,
-                        stepGoal: _stepGoal,
-                        isActive: _isActive,
-                        onToggle: _toggleStepCounting,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Activity Stats Row: Time, Calories, Distance
-                    FadeSlideIn(
-                      delay: const Duration(milliseconds: 120),
-                      child: DailyStatsRow(
-                        timeString: _formatDuration(_elapsedSeconds),
-                        caloriesString: '$_calories',
-                        distanceKmString: _distanceKm.toStringAsFixed(2),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // "Your Progress" Weekly Progress Card
-                    FadeSlideIn(
-                      delay: const Duration(milliseconds: 240),
-                      child: WeeklyProgressCard(
-                        days: _buildWeeklyProgress(),
-                        selectedPeriod: _selectedWeekPeriod,
-                        onPeriodChanged: (newPeriod) {
-                          setState(() {
-                            _selectedWeekPeriod = newPeriod;
-                          });
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-                  ],
-                ),
               ),
+            ],
+          ),
+        ),
       ),
       bottomNavigationBar: DashboardBottomNav(
         currentIndex: _currentNavIndex,
@@ -672,7 +669,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           setState(() {
             _currentNavIndex = index;
           });
-          if (index != 0 && index != 4) {
+          if (index == 2 || index == 3) {
             final tabNames = ['Home', 'Track', 'Report', 'History', 'Account'];
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -686,6 +683,80 @@ class _DashboardScreenState extends State<DashboardScreen>
             );
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildHomeTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 16,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Speedometer Circular Arc Step Gauge (Screens 25, 26, 28, 29)
+          FadeSlideIn(
+            child: SpeedometerGauge(
+              currentSteps: _currentSteps,
+              stepGoal: _stepGoal,
+              isActive: _isActive,
+              onToggle: _toggleStepCounting,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Activity Stats Row: Time, Calories, Distance
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 120),
+            child: DailyStatsRow(
+              timeString: _formatDuration(_elapsedSeconds),
+              caloriesString: '$_calories',
+              distanceKmString: _distanceKm.toStringAsFixed(2),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // "Your Progress" Weekly Progress Card
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 240),
+            child: WeeklyProgressCard(
+              days: _buildWeeklyProgress(),
+              selectedPeriod: _selectedWeekPeriod,
+              onPeriodChanged: (newPeriod) {
+                setState(() {
+                  _selectedWeekPeriod = newPeriod;
+                });
+              },
+            ),
+          ),
+
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderTab(String name) {
+    final p = AppPalette.of(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(LucideIcons.clock, size: 48, color: p.textSecondary),
+          const SizedBox(height: 12),
+          Text(
+            '$name coming soon',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: p.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

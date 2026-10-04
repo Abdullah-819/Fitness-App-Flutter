@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../data/track_config.dart';
+import '../../data/track_map_style.dart';
 
 /// Interactive OpenStreetMap widget rendering live polyline, start marker,
 /// and current user location pin.
@@ -16,6 +17,11 @@ class TrackMapView extends StatelessWidget {
   final LatLng? currentPosition;
   final LatLng? startPosition;
   final bool isTracking;
+  final TrackMapStyle mapStyle;
+
+  /// Space kept free at the bottom (for START button / stats sheet) so the
+  /// map credit stays visible instead of hiding underneath them.
+  final double bottomInset;
   final void Function(MapCamera camera, bool hasGesture)? onPositionChanged;
 
   const TrackMapView({
@@ -27,6 +33,8 @@ class TrackMapView extends StatelessWidget {
     this.currentPosition,
     this.startPosition,
     this.isTracking = false,
+    this.mapStyle = TrackMapStyle.standard,
+    this.bottomInset = 0,
     this.onPositionChanged,
   });
 
@@ -87,14 +95,20 @@ class TrackMapView extends StatelessWidget {
       options: MapOptions(
         initialCenter: center,
         initialZoom: zoom,
+        minZoom: 3,
+        // Tiles are enlarged past their native zoom, so the map never goes blank.
+        maxZoom: 22,
         onPositionChanged: onPositionChanged,
       ),
       children: [
-        // OpenStreetMap raster tiles
+        // Base map tiles (style chosen by the user)
         TileLayer(
-          urlTemplate: TrackConfig.osmTileUrlTemplate,
+          key: ValueKey(mapStyle),
+          urlTemplate: mapStyle.urlTemplate,
           userAgentPackageName: TrackConfig.userAgentPackageName,
-          maxZoom: 19,
+          // Real tiles exist only up to this zoom; closer views scale them up.
+          maxNativeZoom: mapStyle.maxNativeZoom,
+          maxZoom: 22,
         ),
 
         // Route Polyline
@@ -114,11 +128,12 @@ class TrackMapView extends StatelessWidget {
         // Map markers
         MarkerLayer(markers: markers),
 
-        // Mandatory OpenStreetMap attribution per policy
-        RichAttributionWidget(
-          attributions: const [
-            TextSourceAttribution('OpenStreetMap contributors'),
-          ],
+        // Mandatory map attribution, lifted above the bottom controls
+        Padding(
+          padding: EdgeInsets.only(bottom: bottomInset),
+          child: RichAttributionWidget(
+            attributions: [TextSourceAttribution(mapStyle.attribution)],
+          ),
         ),
       ],
     );
