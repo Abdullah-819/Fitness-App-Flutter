@@ -16,4 +16,5 @@ Future<void> openMemoryBoxes() async {
   await open<String>('phone_accounts_box');
   await open<String>('session_box');
   await open<Map<dynamic, dynamic>>('step_session_box');
+  await open<String>('track_sessions_box');
 }
