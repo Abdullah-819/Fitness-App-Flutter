@@ -38,8 +38,9 @@ import 'account_view.dart';
 /// - Screen 29: Home - Steps counter stopped - Step goal passed
 class DashboardScreen extends StatefulWidget {
   final UserModel? user;
+  final TrackProvider? trackProvider;
 
-  const DashboardScreen({super.key, this.user});
+  const DashboardScreen({super.key, this.user, this.trackProvider});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -77,7 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   void initState() {
     super.initState();
     _currentUser = widget.user ?? AuthService.instance.currentUser;
-    _trackProvider = TrackProvider();
+    _trackProvider = widget.trackProvider ?? TrackProvider();
     WidgetsBinding.instance.addObserver(this);
     // Resolve the goal first so restored steps are compared against it.
     _loadUserGoal().then((_) => _restoreSession());
@@ -97,7 +98,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     WidgetsBinding.instance.removeObserver(this);
     _stepTimer?.cancel();
     _stepSensor.stop();
-    _trackProvider.dispose();
+    if (widget.trackProvider == null) {
+      _trackProvider.dispose();
+    }
     super.dispose();
   }
 

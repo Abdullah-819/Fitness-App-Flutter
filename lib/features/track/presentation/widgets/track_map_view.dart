@@ -114,13 +114,11 @@ class TrackMapView extends StatelessWidget {
         // Map markers
         MarkerLayer(markers: markers),
 
-        // Mandatory OpenStreetMap attribution
-        SimpleAttributionWidget(
-          source: const Text(
-            '© OpenStreetMap contributors',
-            style: TextStyle(fontSize: 10, color: Colors.black87),
-          ),
-          alignment: Alignment.topLeft,
+        // Mandatory OpenStreetMap attribution per policy
+        RichAttributionWidget(
+          attributions: const [
+            TextSourceAttribution('OpenStreetMap contributors'),
+          ],
         ),
       ],
     );
