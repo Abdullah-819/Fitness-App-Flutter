@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import '../../../core/config/app_config.dart';
 import '../domain/models/user_model.dart';
+import 'phone_account_store.dart';
+import 'session_store.dart';
 
 /// Exception thrown during authentication failures.
 class AuthException implements Exception {
@@ -33,9 +36,69 @@ class AuthService {
   AuthService._();
   static final AuthService instance = AuthService._();
 
-  UserModel? _currentUser;
-  UserModel? get currentUser => _currentUser;
-  bool get isAuthenticated => _currentUser != null;
+  UserModel? _user;
+  UserModel? get currentUser => _user;
+  bool get isAuthenticated => _user != null;
+
+  UserModel? get _currentUser => _user;
+
+  /// Every assignment keeps the saved session in sync: signing in or up
+  /// saves it, signing out (null) clears it.
+  set _currentUser(UserModel? value) {
+    _user = value;
+    if (value == null) {
+      SessionStore.instance.clearSession();
+    } else {
+      SessionStore.instance.saveSession(value);
+    }
+  }
+
+  /// Loads the user saved by a previous run, if they never logged out.
+  Future<UserModel?> restoreSession() async {
+    _user = await SessionStore.instance.loadSession();
+    return _user;
+  }
+
+  /// Replaces the current user (e.g. after onboarding) and remembers their
+  /// profile for future sign-ins.
+  Future<void> updateCurrentUser(UserModel user) async {
+    _currentUser = user;
+    await SessionStore.instance.saveProfile(user);
+  }
+
+  /// Restores a previously saved profile (gender, age, goal...) onto a
+  /// freshly signed-in user.
+  Future<UserModel> _mergeProfile(UserModel user) async {
+    final saved = await SessionStore.instance.loadProfile(user.id);
+    final merged = saved == null
+        ? user
+        : user.copyWith(
+            avatarUrl: saved.avatarUrl,
+            gender: saved.gender,
+            isSedentary: saved.isSedentary,
+            age: saved.age,
+            heightCm: saved.heightCm,
+            weightKg: saved.weightKg,
+            dailyStepGoal: saved.dailyStepGoal,
+          );
+    _currentUser = merged;
+    await SessionStore.instance.saveProfile(merged);
+    return merged;
+  }
+
+  static String _emailId(String normalizedEmail) =>
+      'user_${normalizedEmail.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}';
+
+  static String _nameFromEmail(String normalizedEmail) {
+    final name = normalizedEmail
+        .split('@')[0]
+        .replaceAll(RegExp(r'[._]'), ' ')
+        .split(' ')
+        .where((s) => s.isNotEmpty)
+        .map((s) => '${s[0].toUpperCase()}${s.substring(1)}')
+        .join(' ');
+    return name.isNotEmpty ? name : 'TrackFit User';
+  }
 
   /// Default demo credentials
   static const String defaultEmail = 'andrew.ainsley@yourdomain.com';
@@ -75,7 +138,8 @@ class AuthService {
 
   /// Verifies an OTP code (checks against static OTP '1234')
   bool verifyOtp({required String email, required String otp}) {
-    return otp.trim() == staticOtp;
+    // The fixed demo code only exists in the staging build.
+    return AppConfig.isStaging && otp.trim() == staticOtp;
   }
 
   /// Updates the password for a given user email so subsequent logins work with this password
@@ -86,6 +150,40 @@ class AuthService {
   /// Sign in with email and password.
   /// Throws [AuthException] on invalid credentials.
   Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    final accountKey = 'email:$normalizedEmail';
+    final store = PhoneAccountStore.instance;
+
+    // 1. Accounts created through Sign Up (both builds).
+    if (await store.exists(accountKey)) {
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (!await store.verify(accountKey, password.trim())) {
+        throw const AuthException('Incorrect password. Please try again.');
+      }
+      _currentUser = UserModel(
+        id: _emailId(normalizedEmail),
+        email: normalizedEmail,
+        name: _nameFromEmail(normalizedEmail),
+      );
+      return _mergeProfile(_currentUser!);
+    }
+
+    // 2. Demo / team accounts exist only in the staging build.
+    if (AppConfig.isStaging) {
+      return _mergeProfile(await _signInDemo(email: email, password: password));
+    }
+
+    await Future.delayed(const Duration(milliseconds: 1000));
+    throw const AuthException(
+      'No account found for this email. Please sign up first.',
+    );
+  }
+
+  /// Staging-only sign in against the built-in demo and team accounts.
+  Future<UserModel> _signInDemo({
     required String email,
     required String password,
   }) async {
@@ -204,6 +302,15 @@ class AuthService {
       throw const AuthException('Password must be at least 6 characters long.');
     }
 
+    final accountKey = 'email:$normalizedEmail';
+    if (AppConfig.isProduction &&
+        await PhoneAccountStore.instance.exists(accountKey)) {
+      throw const AuthException(
+        'An account with this email already exists. Please sign in.',
+      );
+    }
+    await PhoneAccountStore.instance.register(accountKey, trimmedPassword);
+
     // Determine user name from email or provided name
     final derivedName = (name != null && name.trim().isNotEmpty)
         ? name.trim()
@@ -216,12 +323,86 @@ class AuthService {
               .join(' ');
 
     _currentUser = UserModel(
-      id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+      id: _emailId(normalizedEmail),
       email: normalizedEmail,
       name: derivedName.isNotEmpty ? derivedName : 'TrackFit User',
     );
 
     return _currentUser!;
+  }
+
+  /// Sign up with a phone number (already validated/normalised, e.g.
+  /// +923006789089) and password.
+  /// Throws [AuthException] on invalid input.
+  Future<UserModel> signUpWithPhone({
+    required String phone,
+    required String password,
+    String? name,
+  }) async {
+    // Simulate network delay to match design 8_Light_sign up loading.png
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    final trimmedPassword = password.trim();
+
+    if (!RegExp(r'^\+923\d{9}$').hasMatch(phone)) {
+      throw const AuthException('Please enter a valid Pakistani phone number.');
+    }
+
+    if (trimmedPassword.length < 6) {
+      throw const AuthException('Password must be at least 6 characters long.');
+    }
+
+    if (AppConfig.isProduction &&
+        await PhoneAccountStore.instance.exists(phone)) {
+      throw const AuthException(
+        'An account with this number already exists. Please sign in.',
+      );
+    }
+    await PhoneAccountStore.instance.register(phone, trimmedPassword);
+
+    _currentUser = UserModel(
+      id: 'user_phone_${phone.replaceAll('+', '')}',
+      email: '',
+      phone: phone,
+      name: (name != null && name.trim().isNotEmpty)
+          ? name.trim()
+          : 'TrackFit User',
+    );
+
+    return _currentUser!;
+  }
+
+  /// Sign in with a phone number (normalised, e.g. +923006789089) and
+  /// password. Throws [AuthException] if the account is unknown or the
+  /// password is wrong.
+  Future<UserModel> signInWithPhone({
+    required String phone,
+    required String password,
+  }) async {
+    // Simulate network delay to display loading state
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    if (!RegExp(r'^\+923\d{9}$').hasMatch(phone)) {
+      throw const AuthException('Please enter a valid Pakistani phone number.');
+    }
+
+    final store = PhoneAccountStore.instance;
+    if (!await store.exists(phone)) {
+      throw const AuthException(
+        'No account found for this number. Please sign up first.',
+      );
+    }
+    if (!await store.verify(phone, password.trim())) {
+      throw const AuthException('Incorrect password. Please try again.');
+    }
+
+    _currentUser = UserModel(
+      id: 'user_phone_${phone.replaceAll('+', '')}',
+      email: '',
+      phone: phone,
+      name: 'TrackFit User',
+    );
+    return _mergeProfile(_currentUser!);
   }
 
   /// Checks if an email corresponds to a registered account (demo or team members).

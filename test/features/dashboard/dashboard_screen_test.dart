@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:step_counter/features/auth/domain/models/user_model.dart';
 import 'package:step_counter/features/dashboard/dashboard.dart';
 import 'package:step_counter/features/home/presentation/screens/home_screen.dart';
+import '../../helpers/memory_hive.dart';
 
 void main() {
+  setUp(openMemoryBoxes);
+
   const testUser = UserModel(
     id: 'test_user_id',
     name: 'Alex Johnson',
@@ -33,7 +37,14 @@ void main() {
       expect(find.text('Steps'), findsOneWidget);
       expect(find.text('0'), findsWidgets);
       expect(find.text('/6,000'), findsOneWidget);
-      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Icon &&
+              (w.icon == LucideIcons.play || w.icon == Icons.play_arrow_rounded),
+        ),
+        findsOneWidget,
+      );
 
       // Verify Activity stats
       expect(find.text('time'), findsOneWidget);
@@ -47,10 +58,10 @@ void main() {
       expect(find.text('Today'), findsOneWidget);
 
       // Verify Bottom Nav
-      expect(find.text('Track'), findsOneWidget);
-      expect(find.text('Report'), findsOneWidget);
-      expect(find.text('History'), findsOneWidget);
-      expect(find.text('Account'), findsOneWidget);
+      expect(find.bySemanticsLabel('Track'), findsOneWidget);
+      expect(find.bySemanticsLabel('Report'), findsOneWidget);
+      expect(find.bySemanticsLabel('History'), findsOneWidget);
+      expect(find.bySemanticsLabel('Account'), findsOneWidget);
     });
 
     testWidgets('PhysicalActivityPermissionDialog renders matching Screen 23',

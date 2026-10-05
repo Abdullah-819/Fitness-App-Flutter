@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/theme/app_palette.dart';
 import '../../../../core/constants/app_colors.dart';
 
 /// Three-column daily activity statistics row (Time, Calories, Distance).
@@ -20,19 +21,13 @@ class DailyStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: p.card,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -47,7 +42,7 @@ class DailyStatsRow extends StatelessWidget {
           Container(
             height: 48,
             width: 1,
-            color: const Color(0xFFEDEEF2),
+            color: p.divider,
           ),
           Expanded(
             child: _StatColumn(
@@ -60,12 +55,12 @@ class DailyStatsRow extends StatelessWidget {
           Container(
             height: 48,
             width: 1,
-            color: const Color(0xFFEDEEF2),
+            color: p.divider,
           ),
           Expanded(
             child: _StatColumn(
               icon: LucideIcons.mapPin,
-              iconColor: const Color(0xFF34C759),
+              iconColor: AppColors.success,
               value: distanceKmString,
               label: 'km',
             ),
@@ -91,6 +86,7 @@ class _StatColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -98,10 +94,10 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: p.textPrimary,
             letterSpacing: -0.3,
           ),
           maxLines: 1,
@@ -110,10 +106,10 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 3),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textLight,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: p.textSecondary,
           ),
         ),
       ],

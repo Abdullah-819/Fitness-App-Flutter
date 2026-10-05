@@ -4,8 +4,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:step_counter/features/auth/data/auth_service.dart';
 import 'package:step_counter/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:step_counter/features/auth/presentation/widgets/auth_form_icons.dart';
+import '../../helpers/memory_hive.dart';
 
 void main() {
+  setUp(openMemoryBoxes);
+
   group('AuthService Tests', () {
     test('Default user logs in successfully', () async {
       final user = await AuthService.instance.signIn(
@@ -45,6 +48,9 @@ void main() {
           home: SignInScreen(),
         ),
       );
+      await tester.tap(find.byKey(const Key('signup_method_email')));
+      await tester.pumpAndSettle();
+
 
       // Verify header texts
       expect(find.textContaining('Welcome Back!'), findsOneWidget);
@@ -67,9 +73,10 @@ void main() {
       expect(find.byIcon(Icons.more_vert), findsOneWidget);
 
       // Verify social buttons
-      expect(find.text('Continue with Google'), findsOneWidget);
-      expect(find.text('Continue with Apple'), findsOneWidget);
-      expect(find.text('Continue with Facebook'), findsOneWidget);
+      // Social sign-in options live on the Sign Up screen only
+      expect(find.text('Continue with Google'), findsNothing);
+      expect(find.text('Continue with Apple'), findsNothing);
+      expect(find.text('Continue with Facebook'), findsNothing);
 
       // Verify Sign in button
       expect(find.widgetWithText(ElevatedButton, 'Sign in'), findsOneWidget);

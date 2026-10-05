@@ -7,6 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
+import '../../../../core/constants/app_assets.dart';
 import '../widgets/footprints_icon.dart';
 
 /// Minimalist, high-performance splash screen for Step Counter & Walking Goals.
@@ -69,6 +70,40 @@ class _SplashScreenState extends State<SplashScreen>
           widget.onInitialized!();
         }
       });
+    }
+  }
+
+  bool _precached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_precached) return;
+    _precached = true;
+    _precacheNextScreens();
+  }
+
+  /// Decodes the images of the next screens now, during the splash, so they
+  /// appear instantly instead of popping in while the user is looking.
+  void _precacheNextScreens() {
+    final images = <ImageProvider>[
+      const AssetImage(AppAssets.walkthrough1),
+      const AssetImage(AppAssets.walkthrough2),
+      const AssetImage(AppAssets.walkthrough3),
+      const AssetImage(AppAssets.logoPurple),
+      const AssetImage(AppAssets.sedentaryLifestyle),
+      // Same size hint as the gender screen so the cache entry is reused.
+      ResizeImage(
+        const AssetImage(AppAssets.genderMan),
+        height: AppAssets.genderImageCacheHeight,
+      ),
+      ResizeImage(
+        const AssetImage(AppAssets.genderWoman),
+        height: AppAssets.genderImageCacheHeight,
+      ),
+    ];
+    for (final image in images) {
+      precacheImage(image, context).catchError((_) {});
     }
   }
 

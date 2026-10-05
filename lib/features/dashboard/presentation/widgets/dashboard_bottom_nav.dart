@@ -1,16 +1,15 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
-/// Bottom Navigation Bar matching the Dashboard Figma design (screens 25-29).
+/// Curved bottom navigation bar for the dashboard (powered by
+/// `curved_navigation_bar`): the selected tab floats up in a purple circle
+/// with a smooth animated notch.
 ///
-/// Features 5 primary app navigation destinations:
-/// - Home (selected indicator with solid purple pill)
-/// - Track
-/// - Report
-/// - History
-/// - Account
+/// Destinations: Home, Track, Report, History, Account.
 class DashboardBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTabSelected;
@@ -21,129 +20,41 @@ class DashboardBottomNav extends StatelessWidget {
     required this.onTabSelected,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFF0F1F5),
-            width: 1.0,
-          ),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: LucideIcons.compass,
-                label: 'Home',
-                isSelected: currentIndex == 0,
-                onTap: () => onTabSelected(0),
-                isCustomHome: true,
-              ),
-              _NavItem(
-                icon: LucideIcons.mapPin,
-                label: 'Track',
-                isSelected: currentIndex == 1,
-                onTap: () => onTabSelected(1),
-              ),
-              _NavItem(
-                icon: LucideIcons.chartColumn,
-                label: 'Report',
-                isSelected: currentIndex == 2,
-                onTap: () => onTabSelected(2),
-              ),
-              _NavItem(
-                icon: LucideIcons.fileText,
-                label: 'History',
-                isSelected: currentIndex == 3,
-                onTap: () => onTabSelected(3),
-              ),
-              _NavItem(
-                icon: LucideIcons.user,
-                label: 'Account',
-                isSelected: currentIndex == 4,
-                onTap: () => onTabSelected(4),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final bool isCustomHome;
-
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    this.isCustomHome = false,
-  });
+  static const List<({IconData icon, String label})> _items = [
+    (icon: LucideIcons.house, label: 'Home'),
+    (icon: LucideIcons.mapPin, label: 'Track'),
+    (icon: LucideIcons.chartColumn, label: 'Report'),
+    (icon: LucideIcons.fileText, label: 'History'),
+    (icon: LucideIcons.user, label: 'Account'),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = AppColors.primaryPurple;
-    final inactiveColor = const Color(0xFF8F9098);
+    final p = AppPalette.of(context);
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isCustomHome && isSelected)
-              Container(
-                width: 28,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: activeColor,
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Center(
-                  child: Container(
-                    width: 10,
-                    height: 2,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  ),
-                ),
-              )
-            else
-              Icon(
-                icon,
-                size: 22,
-                color: isSelected ? activeColor : inactiveColor,
-              ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? activeColor : inactiveColor,
-              ),
+    return CurvedNavigationBar(
+      index: currentIndex,
+      height: 62,
+      color: p.navBackground,
+      buttonBackgroundColor: AppColors.primaryPurple,
+      backgroundColor: p.background,
+      animationCurve: Curves.easeOutCubic,
+      animationDuration: const Duration(milliseconds: 450),
+      onTap: onTabSelected,
+      items: [
+        for (var i = 0; i < _items.length; i++)
+          Semantics(
+            label: _items[i].label,
+            selected: i == currentIndex,
+            button: true,
+            child: Icon(
+              _items[i].icon,
+              size: 26,
+              // The selected icon sits on the purple circle.
+              color: i == currentIndex ? Colors.white : p.navInactive,
             ),
-          ],
-        ),
-      ),
+          ),
+      ],
     );
   }
 }

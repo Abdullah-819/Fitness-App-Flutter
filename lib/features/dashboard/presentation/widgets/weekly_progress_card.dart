@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 /// Data model representing a single day in the weekly progress row.
 class DayProgressData {
@@ -33,19 +35,13 @@ class WeeklyProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: p.card,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,15 +50,19 @@ class WeeklyProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Your Progress',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.2,
+              Expanded(
+                child: Text(
+                  'Your Progress',
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    color: p.textPrimary,
+                    letterSpacing: -0.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 8),
               PopupMenuButton<String>(
                 initialValue: selectedPeriod,
                 onSelected: onPeriodChanged,
@@ -86,26 +86,26 @@ class WeeklyProgressCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: p.card,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE4E6EA)),
+                    border: Border.all(color: p.border),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         selectedPeriod,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: p.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 18,
-                        color: AppColors.textSecondary,
+                      Icon(
+                        LucideIcons.chevronDown,
+                        size: 16,
+                        color: p.textSecondary,
                       ),
                     ],
                   ),
@@ -114,7 +114,9 @@ class WeeklyProgressCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 14),
+          Divider(height: 1, color: p.divider),
+          const SizedBox(height: 14),
 
           // 7-day circular indicators row
           Row(
@@ -134,32 +136,33 @@ class _DayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 40,
-          height: 40,
+          width: 42,
+          height: 42,
           child: Stack(
             alignment: Alignment.center,
             children: [
               CustomPaint(
-                size: const Size(40, 40),
+                size: const Size(42, 42),
                 painter: _DayRingPainter(
                   progress: data.progress,
                   isToday: data.isToday,
                   activeColor: AppColors.primaryPurple,
-                  trackColor: const Color(0xFFEBECEF),
+                  trackColor: p.ringTrack,
                 ),
               ),
               Text(
                 '${data.dayNumber}',
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
                   color: data.isToday
                       ? AppColors.primaryPurple
-                      : AppColors.textPrimary,
+                      : p.textPrimary,
                 ),
               ),
             ],
@@ -169,11 +172,11 @@ class _DayItem extends StatelessWidget {
         Text(
           data.isToday ? 'Today' : data.dayName,
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: data.isToday ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
             color: data.isToday
                 ? AppColors.primaryPurple
-                : AppColors.textSecondary,
+                : p.textSecondary,
           ),
         ),
       ],
@@ -198,7 +201,7 @@ class _DayRingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 2.0;
-    const strokeWidth = 2.8;
+    const strokeWidth = 3.5;
 
     // Track
     final trackPaint = Paint()

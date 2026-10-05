@@ -13,6 +13,9 @@ class AppAssets {
   static const String sedentaryLifestyle = 'assets/images/sedentary_lifestyle.png';
   static const String goalCompletionTrophy = 'assets/images/goal_completion_trophy.png';
 
+  /// Decode height for the large gender illustrations (about 2x display).
+  static const int genderImageCacheHeight = 880;
+
   // Icons
   static const String logoWhite = 'assets/icons/app_logo_white.png';
   static const String logoPurple = 'assets/icons/app_logo_purple.png';

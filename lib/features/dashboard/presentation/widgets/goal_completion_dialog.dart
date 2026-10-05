@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 /// Celebration modal dialog displayed when the user reaches their step goal.
 ///
@@ -58,9 +59,10 @@ class GoalCompletionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: p.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 34),
@@ -74,7 +76,7 @@ class GoalCompletionDialog extends StatelessWidget {
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFE4E6EA),
+                color: p.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -110,10 +112,10 @@ class GoalCompletionDialog extends StatelessWidget {
             Text(
               '${_formatNumber(stepGoal)} Steps!',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
+                color: p.textPrimary,
                 letterSpacing: -0.6,
               ),
             ),
@@ -121,13 +123,13 @@ class GoalCompletionDialog extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Congratulations Subtitle
-            const Text(
+            Text(
               'Congratulations!\nYou\'ve completed the step goal.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
+                color: p.textSecondary,
                 height: 1.35,
               ),
             ),
@@ -148,7 +150,7 @@ class GoalCompletionDialog extends StatelessWidget {
                 Container(
                   height: 44,
                   width: 1,
-                  color: const Color(0xFFEDEEF2),
+                  color: p.divider,
                 ),
                 Expanded(
                   child: _SummaryMetric(
@@ -161,12 +163,12 @@ class GoalCompletionDialog extends StatelessWidget {
                 Container(
                   height: 44,
                   width: 1,
-                  color: const Color(0xFFEDEEF2),
+                  color: p.divider,
                 ),
                 Expanded(
                   child: _SummaryMetric(
                     icon: LucideIcons.mapPin,
-                    iconColor: const Color(0xFF34C759),
+                    iconColor: AppColors.success,
                     value: distanceKmString,
                     label: 'km',
                   ),
@@ -252,6 +254,7 @@ class _SummaryMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -259,10 +262,10 @@ class _SummaryMetric extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: p.textPrimary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -270,10 +273,10 @@ class _SummaryMetric extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textLight,
+            color: p.textSecondary,
           ),
         ),
       ],

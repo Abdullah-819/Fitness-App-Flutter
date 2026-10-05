@@ -89,12 +89,15 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24.0,
                   vertical: 8.0,
                 ),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -125,17 +128,6 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                       ),
                       const SizedBox(height: 32),
 
-                      // New Password Label & Input
-                      const Text(
-                        'New Password',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
                       CustomTextField(
                         label: 'New Password',
                         hintText: 'Enter new password',
@@ -173,17 +165,6 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Confirm New Password Label & Input
-                      const Text(
-                        'Confirm New Password',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
                       CustomTextField(
                         label: 'Confirm New Password',
                         hintText: 'Re-enter new password',

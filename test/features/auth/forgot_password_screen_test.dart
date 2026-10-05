@@ -119,6 +119,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(const MaterialApp(home: SignInScreen()));
+      await tester.tap(find.byKey(const Key('signup_method_email')));
+      await tester.pumpAndSettle();
 
       // Tap Forgot Password?
       final forgotBtn = find.byKey(const Key('forgot_password_button'));

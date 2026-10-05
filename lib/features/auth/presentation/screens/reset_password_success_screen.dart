@@ -87,7 +87,7 @@ class ResetPasswordSuccessScreen extends StatelessWidget {
                           width: 36,
                           height: 36,
                           decoration: const BoxDecoration(
-                            color: Color(0xFFF3E8FF),
+                            color: AppColors.lightPurpleBg,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(

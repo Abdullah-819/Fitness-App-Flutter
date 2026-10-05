@@ -4,8 +4,11 @@ import 'package:step_counter/features/auth/domain/models/user_model.dart';
 import 'package:step_counter/features/home/presentation/screens/home_screen.dart';
 import 'package:step_counter/features/onboarding/presentation/screens/sign_up_steps_screen.dart';
 import 'package:step_counter/features/onboarding/presentation/widgets/vertical_number_picker.dart';
+import '../../helpers/memory_hive.dart';
 
 void main() {
+  setUp(openMemoryBoxes);
+
   void setupScreenSize(WidgetTester tester) {
     tester.view.physicalSize = const Size(430, 932);
     tester.view.devicePixelRatio = 1.0;

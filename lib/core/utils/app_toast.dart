@@ -14,7 +14,7 @@ class AppToast {
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: const Color(0xFF10B981), // Vibrant emerald green
+      backgroundColor: AppColors.success, // Vibrant emerald green
       textColor: Colors.white,
       fontSize: 14.0,
     );
@@ -27,7 +27,7 @@ class AppToast {
       msg: message,
       toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: const Color(0xFFEF4444), // Vibrant crimson red
+      backgroundColor: AppColors.danger, // Vibrant crimson red
       textColor: Colors.white,
       fontSize: 14.0,
     );
