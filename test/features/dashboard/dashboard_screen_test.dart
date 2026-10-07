@@ -148,6 +148,8 @@ void main() {
         ),
       );
       await tester.pump();
+      // Stats count up from 0; let the intro timeline finish.
+      await tester.pump(const Duration(seconds: 4));
 
       expect(find.text('6,000 Steps!'), findsOneWidget);
       expect(find.text("Congratulations!\nYou've completed the step goal."), findsOneWidget);
