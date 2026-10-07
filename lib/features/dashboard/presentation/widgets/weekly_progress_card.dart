@@ -1,9 +1,11 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../widgets/animated_dropdown.dart';
 
 /// Data model representing a single day in the weekly progress row.
 class DayProgressData {
@@ -63,51 +65,53 @@ class WeeklyProgressCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              PopupMenuButton<String>(
-                initialValue: selectedPeriod,
-                onSelected: onPeriodChanged,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                itemBuilder: (context) => const [
-                  PopupMenuItem(
-                    value: 'This Week',
-                    child: Text('This Week'),
-                  ),
-                  PopupMenuItem(
-                    value: 'Last Week',
-                    child: Text('Last Week'),
-                  ),
-                  PopupMenuItem(
-                    value: 'This Month',
-                    child: Text('This Month'),
-                  ),
-                ],
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: p.card,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: p.border),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        selectedPeriod,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: p.textPrimary,
+              Builder(
+                builder: (pillContext) => InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () async {
+                    final picked = await showAnimatedDropdown<String>(
+                      pillContext,
+                      selected: selectedPeriod,
+                      options: const [
+                        DropdownOption(value: 'This Week', label: 'This Week'),
+                        DropdownOption(value: 'Last Week', label: 'Last Week'),
+                        DropdownOption(
+                          value: 'This Month',
+                          label: 'This Month',
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        LucideIcons.chevronDown,
-                        size: 16,
-                        color: p.textSecondary,
-                      ),
-                    ],
+                      ],
+                    );
+                    if (picked != null) onPeriodChanged?.call(picked);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: p.card,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: p.border),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          selectedPeriod,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: p.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          LucideIcons.chevronDown,
+                          size: 16,
+                          color: p.textSecondary,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -160,9 +164,7 @@ class _DayItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: data.isToday
-                      ? AppColors.primaryPurple
-                      : p.textPrimary,
+                  color: data.isToday ? AppColors.primaryPurple : p.textPrimary,
                 ),
               ),
             ],
@@ -174,9 +176,7 @@ class _DayItem extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: data.isToday
-                ? AppColors.primaryPurple
-                : p.textSecondary,
+            color: data.isToday ? AppColors.primaryPurple : p.textSecondary,
           ),
         ),
       ],
