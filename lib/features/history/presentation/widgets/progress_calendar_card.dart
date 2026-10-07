@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -37,12 +38,28 @@ class ProgressCalendarCard extends StatelessWidget {
   });
 
   static const List<String> _weekDayNames = [
-    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
   ];
 
   static const List<String> _monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   @override
@@ -52,7 +69,7 @@ class ProgressCalendarCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 360 ? 14 : 20),
       decoration: BoxDecoration(
         color: palette.card,
         borderRadius: BorderRadius.circular(24),
@@ -88,47 +105,51 @@ class ProgressCalendarCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              InkWell(
-                onTap: () async {
-                  final chosen = await DateRangePickerModal.show(
-                    context,
-                    currentFilter: periodFilter,
-                  );
-                  if (chosen != null) {
-                    onPeriodChanged(chosen);
-                  }
-                },
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: palette.border.withValues(alpha: palette.isDark ? 0.4 : 0.9),
-                      width: 1.2,
+              Builder(
+                builder: (pillContext) => InkWell(
+                  onTap: () async {
+                    final chosen = await DateRangePickerModal.show(
+                      pillContext,
+                      currentFilter: periodFilter,
+                    );
+                    if (chosen != null) {
+                      onPeriodChanged(chosen);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'This Month',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: palette.border.withValues(
+                          alpha: palette.isDark ? 0.4 : 0.9,
+                        ),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'This Month',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: palette.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          LucideIcons.chevronDown,
+                          size: 16,
                           color: palette.textPrimary,
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        LucideIcons.chevronDown,
-                        size: 16,
-                        color: palette.textPrimary,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -148,12 +169,26 @@ class ProgressCalendarCard extends StatelessWidget {
                 constraints: const BoxConstraints(),
                 onPressed: onPreviousMonth,
               ),
-              Text(
-                monthTitle,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: palette.textPrimary,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.3),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                ),
+                child: Text(
+                  monthTitle,
+                  key: ValueKey(monthTitle),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: palette.textPrimary,
+                  ),
                 ),
               ),
               IconButton(
@@ -189,73 +224,116 @@ class ProgressCalendarCard extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // Calendar Grid (7 columns x 5 rows)
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: days.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 6,
-              childAspectRatio: 1.0,
-            ),
-            itemBuilder: (context, index) {
-              final dayItem = days[index];
-              final isHighlighted = dayItem.isCurrentMonth && (dayItem.dayNumber == selectedDay);
+          // Calendar Grid (7 columns x N rows) - cross-fades when month changes
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOut,
+            child: LayoutBuilder(
+              key: ValueKey(monthTitle),
+              builder: (context, constraints) {
+                // Ring size follows the available cell width so it fits any phone.
+                final cellWidth = (constraints.maxWidth - 6 * 6) / 7;
+                final ringSize = cellWidth.clamp(26.0, 38.0);
 
-              return GestureDetector(
-                onTap: () {
-                  if (dayItem.isCurrentMonth) {
-                    onSelectDay(dayItem.dayNumber);
-                  }
-                },
-                child: Center(
-                  child: SizedBox(
-                    width: 38,
-                    height: 38,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CustomPaint(
-                          size: const Size(38, 38),
-                          painter: _CalendarProgressPainter(
-                            progress: dayItem.progressRatio,
-                            isSelected: isHighlighted,
-                            isCurrentMonth: dayItem.isCurrentMonth,
-                            activeColor: AppColors.primaryPurple,
-                            trackColor: palette.isDark
-                                ? const Color(0xFF2C2E39)
-                                : const Color(0xFFF3EFFF),
-                            inactiveColor: palette.isDark
-                                ? const Color(0xFF333542)
-                                : const Color(0xFFEDEDED),
-                          ),
-                        ),
-                        Text(
-                          '${dayItem.dayNumber}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: isHighlighted
-                                ? FontWeight.w800
-                                : (dayItem.isCurrentMonth && !dayItem.isFuture && dayItem.progressRatio > 0
-                                    ? FontWeight.w600
-                                    : FontWeight.w500),
-                            color: isHighlighted
-                                ? AppColors.primaryPurple
-                                : (dayItem.isCurrentMonth
-                                    ? (dayItem.isFuture || dayItem.progressRatio == 0
-                                        ? palette.textPrimary.withValues(alpha: 0.7)
-                                        : palette.textPrimary)
-                                    : palette.textSecondary.withValues(alpha: 0.4)),
-                          ),
-                        ),
-                      ],
-                    ),
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: days.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 6,
+                    childAspectRatio: 1.0,
                   ),
-                ),
-              );
-            },
+                  itemBuilder: (context, index) {
+                    final dayItem = days[index];
+                    final isHighlighted =
+                        dayItem.isCurrentMonth &&
+                        (dayItem.dayNumber == selectedDay);
+
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        if (dayItem.isCurrentMonth) {
+                          onSelectDay(dayItem.dayNumber);
+                        }
+                      },
+                      child: Center(
+                        child: AnimatedScale(
+                          scale: isHighlighted ? 1.12 : 1.0,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutBack,
+                          child: SizedBox(
+                            width: ringSize,
+                            height: ringSize,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                TweenAnimationBuilder<double>(
+                                  tween: Tween<double>(
+                                    begin: 0,
+                                    end: dayItem.progressRatio,
+                                  ),
+                                  duration: const Duration(milliseconds: 700),
+                                  curve: Curves.easeOutCubic,
+                                  builder: (context, animatedProgress, _) =>
+                                      CustomPaint(
+                                        size: Size(ringSize, ringSize),
+                                        painter: _CalendarProgressPainter(
+                                          progress: animatedProgress,
+                                          isSelected: isHighlighted,
+                                          isCurrentMonth:
+                                              dayItem.isCurrentMonth,
+                                          activeColor: AppColors.primaryPurple,
+                                          trackColor: palette.isDark
+                                              ? const Color(0xFF2C2E39)
+                                              : const Color(0xFFF3EFFF),
+                                          inactiveColor: palette.isDark
+                                              ? const Color(0xFF333542)
+                                              : const Color(0xFFEDEDED),
+                                        ),
+                                      ),
+                                ),
+                                AnimatedDefaultTextStyle(
+                                  duration: const Duration(milliseconds: 200),
+                                  style: TextStyle(
+                                    fontSize: ringSize < 32 ? 12 : 14,
+                                    fontWeight: isHighlighted
+                                        ? FontWeight.w800
+                                        : (dayItem.isCurrentMonth &&
+                                                  !dayItem.isFuture &&
+                                                  dayItem.progressRatio > 0
+                                              ? FontWeight.w600
+                                              : FontWeight.w500),
+                                    color: isHighlighted
+                                        ? AppColors.primaryPurple
+                                        : (dayItem.isCurrentMonth
+                                              ? (dayItem.isFuture ||
+                                                        dayItem.progressRatio ==
+                                                            0
+                                                    ? palette.textPrimary
+                                                          .withValues(
+                                                            alpha: 0.7,
+                                                          )
+                                                    : palette.textPrimary)
+                                              : palette.textSecondary
+                                                    .withValues(alpha: 0.4)),
+                                  ),
+                                  child: Text(
+                                    '${dayItem.dayNumber}',
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
