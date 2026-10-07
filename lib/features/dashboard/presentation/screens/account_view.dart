@@ -5,6 +5,7 @@ import '../../../../core/navigation/page_transitions.dart';
 import '../../../../core/utils/app_toast.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
+import '../../../developers/presentation/screens/developers_screen.dart';
 import '../../../settings/presentation/screens/personal_info_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../widgets/account_menu_tile.dart';
@@ -102,6 +103,13 @@ class AccountView extends StatelessWidget {
         const SizedBox(height: 16),
         AccountSection(
           children: [
+            AccountMenuTile(
+              icon: LucideIcons.code,
+              label: 'Developers',
+              onTap: () => Navigator.of(
+                context,
+              ).push(AppPageRoute(page: const DevelopersScreen())),
+            ),
             AccountMenuTile(
               icon: LucideIcons.settings,
               label: 'Preferences',
