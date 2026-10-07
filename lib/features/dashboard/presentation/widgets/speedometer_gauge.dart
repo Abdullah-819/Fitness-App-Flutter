@@ -105,7 +105,7 @@ class SpeedometerGauge extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '/$stepGoal',
+                      '/${_formatNumber(stepGoal)}',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w400,

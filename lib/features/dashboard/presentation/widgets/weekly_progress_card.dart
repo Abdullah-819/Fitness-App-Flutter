@@ -50,15 +50,19 @@ class WeeklyProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Your Progress',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  color: p.textPrimary,
-                  letterSpacing: -0.2,
+              Expanded(
+                child: Text(
+                  'Your Progress',
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    color: p.textPrimary,
+                    letterSpacing: -0.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 8),
               PopupMenuButton<String>(
                 initialValue: selectedPeriod,
                 onSelected: onPeriodChanged,

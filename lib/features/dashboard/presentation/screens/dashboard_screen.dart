@@ -16,6 +16,7 @@ import '../../../../core/utils/app_toast.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
 import '../../../auth/presentation/screens/sign_in_screen.dart';
+import '../../../history/history.dart';
 import '../../../splash/presentation/widgets/footprints_icon.dart';
 import '../../../track/track.dart';
 import '../../../../widgets/fade_slide_in.dart';
@@ -59,6 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   bool _isActive = false;
   bool _hasPassedGoal = false;
   Timer? _stepTimer;
+  Timer? _permissionsTimer;
   final StepSensorService _stepSensor = StepSensorService();
   int? _sensorBaseline; // raw sensor value matching _stepsAtBaseline
   int _stepsAtBaseline = 0;
@@ -73,12 +75,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   Map<String, int> _history = {};
   UserModel? _currentUser;
   late final TrackProvider _trackProvider;
+  late final HistoryProvider _historyProvider;
 
   @override
   void initState() {
     super.initState();
     _currentUser = widget.user ?? AuthService.instance.currentUser;
     _trackProvider = widget.trackProvider ?? TrackProvider();
+    _historyProvider = HistoryProvider();
     WidgetsBinding.instance.addObserver(this);
     // Resolve the goal first so restored steps are compared against it.
     _loadUserGoal().then((_) => _restoreSession());
@@ -88,7 +92,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // Check permissions after first frame
     // Let the dashboard animate in before showing a dialog on top of it.
-    Future<void>.delayed(const Duration(milliseconds: 700), () {
+    _permissionsTimer = Timer(const Duration(milliseconds: 700), () {
       if (mounted) _checkInitialPermissions();
     });
   }
@@ -96,8 +100,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _permissionsTimer?.cancel();
     _stepTimer?.cancel();
     _stepSensor.stop();
+    _historyProvider.dispose();
     if (widget.trackProvider == null) {
       _trackProvider.dispose();
     }
@@ -637,15 +643,18 @@ class _DashboardScreenState extends State<DashboardScreen>
       body: SafeArea(
         top: _currentNavIndex != 1,
         bottom: false,
-        child: ChangeNotifierProvider<TrackProvider>.value(
-          value: _trackProvider,
+        child: MultiProvider(
+          providers: [
+            ChangeNotifierProvider<TrackProvider>.value(value: _trackProvider),
+            ChangeNotifierProvider<HistoryProvider>.value(value: _historyProvider),
+          ],
           child: IndexedStack(
             index: _currentNavIndex,
             children: [
               _buildHomeTab(),
               const TrackScreen(),
-              _buildPlaceholderTab('Report'),
-              _buildPlaceholderTab('History'),
+              const ReportScreen(embeddedInDashboard: true),
+              const HistoryScreen(embeddedInDashboard: true),
               AccountView(
                 user: _currentUser ?? widget.user ?? AuthService.instance.currentUser,
                 level: _level,
@@ -669,19 +678,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           setState(() {
             _currentNavIndex = index;
           });
-          if (index == 2 || index == 3) {
-            final tabNames = ['Home', 'Track', 'Report', 'History', 'Account'];
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Switched to ${tabNames[index]} tab'),
-                duration: const Duration(seconds: 1),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            );
-          }
         },
       ),
     );
@@ -735,27 +731,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
 
           const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderTab(String name) {
-    final p = AppPalette.of(context);
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(LucideIcons.clock, size: 48, color: p.textSecondary),
-          const SizedBox(height: 12),
-          Text(
-            '$name coming soon',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: p.textSecondary,
-            ),
-          ),
         ],
       ),
     );

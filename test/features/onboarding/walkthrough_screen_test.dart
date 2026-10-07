@@ -5,8 +5,11 @@ import 'package:step_counter/features/onboarding/presentation/screens/walkthroug
 import 'package:step_counter/features/onboarding/presentation/screens/welcome_screen.dart';
 import 'package:step_counter/features/splash/presentation/screens/splash_screen.dart';
 import 'package:step_counter/main.dart';
+import '../../helpers/memory_hive.dart';
 
 void main() {
+  setUp(openMemoryBoxes);
+
   testWidgets(
     'WalkthroughScreen renders Walkthrough 1 content matching 2_Light_walkthrough 1.png',
     (WidgetTester tester) async {

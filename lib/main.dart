@@ -34,7 +34,9 @@ void _enterImmersiveMode() {
 }
 
 class StepCounterApp extends StatefulWidget {
-  const StepCounterApp({super.key});
+  final ThemeController? themeController;
+
+  const StepCounterApp({super.key, this.themeController});
 
   @override
   State<StepCounterApp> createState() => _StepCounterAppState();
@@ -61,6 +63,17 @@ class _StepCounterAppState extends State<StepCounterApp>
     if (state == AppLifecycleState.resumed) _enterImmersiveMode();
   }
 
+  ThemeMode _resolveThemeMode(BuildContext context) {
+    if (widget.themeController != null) {
+      return widget.themeController!.mode;
+    }
+    try {
+      return Provider.of<ThemeController>(context, listen: true).mode;
+    } catch (_) {
+      return ThemeMode.light;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData buildTheme(Brightness brightness) => ThemeData(
@@ -76,7 +89,7 @@ class _StepCounterAppState extends State<StepCounterApp>
     return MaterialApp(
       title: 'TrackFit',
       debugShowCheckedModeBanner: false,
-      themeMode: context.watch<ThemeController>().mode,
+      themeMode: _resolveThemeMode(context),
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
       builder: (context, child) {
