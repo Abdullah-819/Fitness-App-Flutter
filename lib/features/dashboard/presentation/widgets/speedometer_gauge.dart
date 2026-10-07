@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -26,6 +27,8 @@ class SpeedometerGauge extends StatelessWidget {
     required this.onToggle,
   });
 
+  static const double _designSize = 300;
+
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
@@ -36,7 +39,9 @@ class SpeedometerGauge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AppPalette.of(context);
-    final progress = stepGoal > 0 ? (currentSteps / stepGoal).clamp(0.0, 1.0) : 0.0;
+    final progress = stepGoal > 0
+        ? (currentSteps / stepGoal).clamp(0.0, 1.0)
+        : 0.0;
 
     return Container(
       width: double.infinity,
@@ -45,118 +50,145 @@ class SpeedometerGauge extends StatelessWidget {
         color: p.card,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Center(
-        child: SizedBox(
-          width: 300,
-          height: 300,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Custom arc gauge painter
-              TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0.0, end: progress),
-                duration: const Duration(milliseconds: 900),
-                curve: Curves.easeOut,
-                builder: (context, animatedProgress, child) {
-                  return CustomPaint(
-                    size: const Size(300, 300),
-                    painter: _SpeedometerPainter(
-                      progress: animatedProgress,
-                      primaryColor: AppColors.primaryPurple,
-                      trackColor: p.ringTrack,
-                      tickColor: p.ringTick,
-                      isDark: p.isDark,
-                    ),
-                  );
-                },
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // The gauge is designed on a 300px canvas and scaled to fit any width.
+          final side = math.min(_designSize, constraints.maxWidth);
+          final k = side / _designSize;
 
-              // Central text information
-              Positioned(
-                top: 92,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+          // Keep large system fonts from pushing the number into the button.
+          return MediaQuery.withClampedTextScaling(
+            minScaleFactor: 0.85,
+            maxScaleFactor: 1.1,
+            child: Center(
+              child: SizedBox(
+                width: side,
+                height: side,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Text(
-                      'Steps',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w400,
-                        color: p.textSecondary,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TweenAnimationBuilder<int>(
-                      tween: IntTween(end: currentSteps),
+                    // Custom arc gauge painter
+                    TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0.0, end: progress),
                       duration: const Duration(milliseconds: 900),
                       curve: Curves.easeOut,
-                      builder: (context, value, child) => Text(
-                        _formatNumber(value),
-                        style: TextStyle(
-                          fontSize: 64,
-                          fontWeight: FontWeight.w700,
-                          color: p.textPrimary,
-                          letterSpacing: -1.2,
-                          height: 1.1,
-                          fontFeatures: const [FontFeature.tabularFigures()],
+                      builder: (context, animatedProgress, child) {
+                        return CustomPaint(
+                          size: Size(side, side),
+                          painter: _SpeedometerPainter(
+                            progress: animatedProgress,
+                            primaryColor: AppColors.primaryPurple,
+                            trackColor: p.ringTrack,
+                            tickColor: p.ringTick,
+                            isDark: p.isDark,
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Central text information (kept inside the ring, above the button)
+                    Positioned.fill(
+                      child: Center(
+                        child: SizedBox(
+                          width: 190 * k,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Steps',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: p.textSecondary,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                TweenAnimationBuilder<int>(
+                                  tween: IntTween(end: currentSteps),
+                                  duration: const Duration(milliseconds: 900),
+                                  curve: Curves.easeOut,
+                                  builder: (context, value, child) => Text(
+                                    _formatNumber(value),
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      fontSize: 52,
+                                      fontWeight: FontWeight.w700,
+                                      color: p.textPrimary,
+                                      letterSpacing: -1,
+                                      height: 1.1,
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '/${_formatNumber(stepGoal)}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: p.textSecondary,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '/${_formatNumber(stepGoal)}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w400,
-                        color: p.textSecondary,
-                        letterSpacing: 0.2,
+
+                    // Center bottom Play/Pause button (compact, scales with gauge)
+                    Positioned(
+                      top: 226 * k,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: onToggle,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          width: 44 * k,
+                          height: 44 * k,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isActive ? p.card : AppColors.primaryPurple,
+                            border: isActive
+                                ? Border.all(
+                                    color: AppColors.primaryPurple,
+                                    width: 2.2,
+                                  )
+                                : null,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryPurple.withValues(
+                                  alpha: isActive ? 0.15 : 0.35,
+                                ),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              isActive ? LucideIcons.pause : LucideIcons.play,
+                              color: isActive
+                                  ? AppColors.primaryPurple
+                                  : Colors.white,
+                              size: 20 * k,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-
-              // Center bottom Play/Pause button
-              Positioned(
-                top: 212,
-                child: GestureDetector(
-                  onTap: onToggle,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isActive ? p.card : AppColors.primaryPurple,
-                      border: isActive
-                          ? Border.all(color: AppColors.primaryPurple, width: 2.5)
-                          : null,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryPurple.withValues(
-                            alpha: isActive ? 0.15 : 0.35,
-                          ),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        isActive
-                            ? LucideIcons.pause
-                            : LucideIcons.play,
-                        color: isActive ? AppColors.primaryPurple : Colors.white,
-                        size: 26,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -179,6 +211,10 @@ class _SpeedometerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Draw on the 300px design canvas, scaled to the actual size.
+    canvas.save();
+    canvas.scale(size.width / 300);
+    size = const Size(300, 300);
     final center = Offset(size.width / 2, size.height / 2);
     const radius = 120.0;
     const strokeWidth = 30.0;
@@ -201,11 +237,17 @@ class _SpeedometerPainter extends CustomPainter {
 
     // 1. Embossed track: dark drop shadow (bottom-right), white highlight
     // (top-left), then the soft grey body with a gentle sweep gradient.
-    arc(trackRect.shift(const Offset(4, 7)),
-        stroke(Colors.black.withValues(alpha: isDark ? 0.45 : 0.16), blur: 8));
-    arc(trackRect.shift(const Offset(-3, -4)),
-        stroke(isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
-            blur: 5));
+    arc(
+      trackRect.shift(const Offset(4, 7)),
+      stroke(Colors.black.withValues(alpha: isDark ? 0.45 : 0.16), blur: 8),
+    );
+    arc(
+      trackRect.shift(const Offset(-3, -4)),
+      stroke(
+        isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
+        blur: 5,
+      ),
+    );
     arc(
       trackRect,
       stroke(trackColor)
@@ -219,8 +261,14 @@ class _SpeedometerPainter extends CustomPainter {
         ).createShader(trackRect),
     );
     // Inner rim light for the rounded "tube" look
-    arc(trackRect, stroke(Colors.white.withValues(alpha: isDark ? 0.04 : 0.6),
-        width: strokeWidth - 18, blur: 3));
+    arc(
+      trackRect,
+      stroke(
+        Colors.white.withValues(alpha: isDark ? 0.04 : 0.6),
+        width: strokeWidth - 18,
+        blur: 3,
+      ),
+    );
 
     // 2. Inner Radial Tick Marks
     final tickPaint = Paint()
@@ -249,10 +297,14 @@ class _SpeedometerPainter extends CustomPainter {
     // 3. Active progress track
     if (progress > 0.0) {
       final activeSweep = totalSweep * progress.clamp(0.001, 1.0);
-      arc(trackRect.shift(const Offset(0, 5)),
-          stroke(primaryColor.withValues(alpha: 0.35), blur: 7), activeSweep);
+      arc(
+        trackRect.shift(const Offset(0, 5)),
+        stroke(primaryColor.withValues(alpha: 0.35), blur: 7),
+        activeSweep,
+      );
       arc(trackRect, stroke(primaryColor), activeSweep);
     }
+    canvas.restore();
   }
 
   @override
