@@ -21,10 +21,14 @@ class HistoryRecordTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = AppPalette.of(context);
+    final compact = MediaQuery.sizeOf(context).width < 360;
 
     return Dismissible(
       key: ValueKey(record.id),
       direction: DismissDirection.endToStart,
+      resizeDuration: const Duration(milliseconds: 250),
+      movementDuration: const Duration(milliseconds: 250),
+      dismissThresholds: const {DismissDirection.endToStart: 0.4},
       onDismissed: (_) => onDelete(),
       background: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -50,125 +54,114 @@ class HistoryRecordTile extends StatelessWidget {
       ),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 16,
+          vertical: 14,
+        ),
         decoration: BoxDecoration(
           color: palette.card,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: palette.border.withValues(alpha: palette.isDark ? 0.25 : 0.6),
+            color: palette.border.withValues(
+              alpha: palette.isDark ? 0.25 : 0.6,
+            ),
             width: 1,
           ),
         ),
         child: Row(
           children: [
-            // Steps
-            Expanded(
+            _Metric(
               flex: 3,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const FootprintsIcon(
-                    size: 20,
-                    color: AppColors.primaryPurple,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      record.formattedSteps,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: palette.textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              icon: const FootprintsIcon(
+                size: 20,
+                color: AppColors.primaryPurple,
               ),
+              text: record.formattedSteps,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: palette.textPrimary,
             ),
-
-            // Time
-            Expanded(
+            _Metric(
               flex: 3,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    LucideIcons.clock,
-                    size: 17,
-                    color: Color(0xFFFF9500),
-                  ),
-                  const SizedBox(width: 5),
-                  Flexible(
-                    child: Text(
-                      record.formattedTime,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: palette.textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              icon: const Icon(
+                LucideIcons.clock,
+                size: 17,
+                color: Color(0xFFFF9500),
               ),
+              text: record.formattedTime,
+              color: palette.textPrimary,
             ),
-
-            // Calories
-            Expanded(
+            _Metric(
               flex: 2,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    LucideIcons.flame,
-                    size: 17,
-                    color: Color(0xFFFF4B4B),
-                  ),
-                  const SizedBox(width: 5),
-                  Flexible(
-                    child: Text(
-                      '${record.calories}',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: palette.textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              icon: const Icon(
+                LucideIcons.flame,
+                size: 17,
+                color: Color(0xFFFF4B4B),
               ),
+              text: '${record.calories}',
+              color: palette.textPrimary,
             ),
-
-            // Distance
-            Expanded(
+            _Metric(
               flex: 2,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    LucideIcons.mapPin,
-                    size: 17,
-                    color: Color(0xFF22C55E),
-                  ),
-                  const SizedBox(width: 5),
-                  Flexible(
-                    child: Text(
-                      record.distanceKm.toStringAsFixed(2),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: palette.textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              icon: const Icon(
+                LucideIcons.mapPin,
+                size: 17,
+                color: Color(0xFF22C55E),
               ),
+              text: record.distanceKm.toStringAsFixed(2),
+              color: palette.textPrimary,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// One icon + value cell. The value scales down instead of truncating so it
+/// stays readable on narrow phones.
+class _Metric extends StatelessWidget {
+  final int flex;
+  final Widget icon;
+  final String text;
+  final double fontSize;
+  final FontWeight fontWeight;
+  final Color color;
+
+  const _Metric({
+    required this.flex,
+    required this.icon,
+    required this.text,
+    required this.color,
+    this.fontSize = 15,
+    this.fontWeight = FontWeight.w600,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: flex,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          icon,
+          const SizedBox(width: 5),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                text,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: fontWeight,
+                  color: color,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -70,7 +70,7 @@ class StatisticsChartCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 360 ? 14 : 20),
       decoration: BoxDecoration(
         color: palette.card,
         borderRadius: BorderRadius.circular(24),
@@ -106,47 +106,51 @@ class StatisticsChartCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              InkWell(
-                onTap: () async {
-                  final chosen = await DateRangePickerModal.show(
-                    context,
-                    currentFilter: periodFilter,
-                  );
-                  if (chosen != null) {
-                    onPeriodChanged(chosen);
-                  }
-                },
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: palette.border.withValues(alpha: palette.isDark ? 0.4 : 0.9),
-                      width: 1.2,
+              Builder(
+                builder: (pillContext) => InkWell(
+                  onTap: () async {
+                    final chosen = await DateRangePickerModal.show(
+                      pillContext,
+                      currentFilter: periodFilter,
+                    );
+                    if (chosen != null) {
+                      onPeriodChanged(chosen);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        periodFilter.label,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: palette.border.withValues(
+                          alpha: palette.isDark ? 0.4 : 0.9,
+                        ),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          periodFilter.label,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: palette.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          LucideIcons.chevronDown,
+                          size: 16,
                           color: palette.textPrimary,
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        LucideIcons.chevronDown,
-                        size: 16,
-                        color: palette.textPrimary,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -157,21 +161,25 @@ class StatisticsChartCard extends StatelessWidget {
 
           // Chart: Y-Axis and 7 Bars
           SizedBox(
-            height: 240,
+            height: (MediaQuery.sizeOf(context).height * 0.3).clamp(
+              210.0,
+              260.0,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Y-Axis Labels
                 SizedBox(
-                  width: 32,
+                  width: 34,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: yLabels.map((lbl) {
                       return Text(
                         lbl,
+                        maxLines: 1,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                           color: palette.textSecondary,
                         ),
@@ -185,69 +193,131 @@ class StatisticsChartCard extends StatelessWidget {
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      const tooltipHeight = 48.0;
+                      const tooltipHeight = 52.0;
                       const labelHeight = 18.0;
                       const spacing = 16.0;
-                      final maxBarHeight = constraints.maxHeight - tooltipHeight - labelHeight - spacing;
+                      final maxBarHeight =
+                          constraints.maxHeight -
+                          tooltipHeight -
+                          labelHeight -
+                          spacing;
+                      final slotWidth = constraints.maxWidth / days.length;
+                      final barWidth = (slotWidth - 6).clamp(14.0, 32.0);
+                      final idleColor = palette.isDark
+                          ? const Color(0xFF8A6CD8)
+                          : const Color(0xFFC4A5FD);
 
                       return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: List.generate(days.length, (index) {
                           final day = days[index];
                           final isSelected = index == selectedIndex;
                           final value = day.valueFor(metricType);
-                          final normalized = (value / scaleCeiling).clamp(0.12, 1.0);
-                          final barHeight = (normalized * maxBarHeight).clamp(24.0, maxBarHeight);
+                          final normalized = (value / scaleCeiling).clamp(
+                            0.12,
+                            1.0,
+                          );
+                          final barHeight = (normalized * maxBarHeight).clamp(
+                            24.0,
+                            maxBarHeight,
+                          );
 
                           return GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () => onSelectDay(index),
                             child: SizedBox(
-                              width: (constraints.maxWidth - 20) / days.length,
+                              width: slotWidth,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // Tooltip badge for active bar
-                                  if (isSelected)
-                                    _TooltipBadge(
-                                      value: day.formattedValueFor(metricType),
-                                      unit: metricType.unit,
-                                    )
-                                  else
-                                    const SizedBox(height: tooltipHeight),
+                                  // Tooltip badge pops in above the active bar
+                                  SizedBox(
+                                    height: tooltipHeight,
+                                    width: slotWidth,
+                                    child: OverflowBox(
+                                      maxWidth: 60,
+                                      alignment: Alignment.bottomCenter,
+                                      child: AnimatedSwitcher(
+                                        duration: const Duration(
+                                          milliseconds: 260,
+                                        ),
+                                        switchInCurve: Curves.easeOutBack,
+                                        switchOutCurve: Curves.easeIn,
+                                        transitionBuilder: (child, animation) =>
+                                            FadeTransition(
+                                              opacity: animation,
+                                              child: ScaleTransition(
+                                                scale: animation,
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                child: child,
+                                              ),
+                                            ),
+                                        child: isSelected
+                                            ? _TooltipBadge(
+                                                key: ValueKey(
+                                                  'tip-$index-${metricType.name}',
+                                                ),
+                                                value: day.formattedValueFor(
+                                                  metricType,
+                                                ),
+                                                unit: metricType.unit,
+                                              )
+                                            : SizedBox.shrink(
+                                                key: ValueKey('none-$index'),
+                                              ),
+                                      ),
+                                    ),
+                                  ),
 
                                   const SizedBox(height: 4),
 
-                                  // Rounded capsule bar
-                                  Container(
-                                    width: 32,
-                                    height: barHeight,
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? AppColors.primaryPurple
-                                          : (palette.isDark
-                                              ? const Color(0xFF8A6CD8)
-                                              : const Color(0xFFC4A5FD)),
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: isSelected
-                                          ? [
-                                              BoxShadow(
-                                                color: AppColors.primaryPurple.withValues(alpha: 0.35),
-                                                blurRadius: 10,
-                                                offset: const Offset(0, 3),
-                                              ),
-                                            ]
-                                          : null,
-                                    ),
+                                  // Rounded capsule bar that grows/shrinks smoothly
+                                  TweenAnimationBuilder<double>(
+                                    tween: Tween<double>(end: barHeight),
+                                    duration: const Duration(milliseconds: 550),
+                                    curve: Curves.easeOutCubic,
+                                    builder: (context, h, _) =>
+                                        AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 250,
+                                          ),
+                                          curve: Curves.easeOut,
+                                          width: barWidth,
+                                          height: h,
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? AppColors.primaryPurple
+                                                : idleColor,
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            boxShadow: isSelected
+                                                ? [
+                                                    BoxShadow(
+                                                      color: AppColors
+                                                          .primaryPurple
+                                                          .withValues(
+                                                            alpha: 0.35,
+                                                          ),
+                                                      blurRadius: 10,
+                                                      offset: const Offset(
+                                                        0,
+                                                        3,
+                                                      ),
+                                                    ),
+                                                  ]
+                                                : null,
+                                          ),
+                                        ),
                                   ),
 
                                   const SizedBox(height: 10),
 
                                   // X-Axis Day number
-                                  Text(
-                                    day.dayLabel,
+                                  AnimatedDefaultTextStyle(
+                                    duration: const Duration(milliseconds: 200),
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: isSelected
@@ -255,8 +325,11 @@ class StatisticsChartCard extends StatelessWidget {
                                           : FontWeight.w500,
                                       color: isSelected
                                           ? palette.textPrimary
-                                          : palette.textPrimary.withValues(alpha: 0.8),
+                                          : palette.textPrimary.withValues(
+                                              alpha: 0.8,
+                                            ),
                                     ),
+                                    child: Text(day.dayLabel, maxLines: 1),
                                   ),
                                 ],
                               ),
@@ -285,7 +358,9 @@ class StatisticsChartCard extends StatelessWidget {
                   child: InkWell(
                     onTap: () => onMetricChanged(metric),
                     borderRadius: BorderRadius.circular(20),
-                    child: Container(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
                       padding: const EdgeInsets.symmetric(vertical: 9),
                       decoration: BoxDecoration(
                         color: isActive
@@ -302,16 +377,20 @@ class StatisticsChartCard extends StatelessWidget {
                               ),
                       ),
                       child: Center(
-                        child: Text(
-                          metric.label,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: isActive
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            color: isActive
-                                ? Colors.white
-                                : palette.textPrimary,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 250),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isActive
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isActive
+                                  ? Colors.white
+                                  : palette.textPrimary,
+                            ),
+                            child: Text(metric.label, maxLines: 1),
                           ),
                         ),
                       ),
@@ -332,10 +411,7 @@ class _TooltipBadge extends StatelessWidget {
   final String value;
   final String unit;
 
-  const _TooltipBadge({
-    required this.value,
-    required this.unit,
-  });
+  const _TooltipBadge({super.key, required this.value, required this.unit});
 
   @override
   Widget build(BuildContext context) {
@@ -350,10 +426,7 @@ class _TooltipBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: palette.card,
             shape: BoxShape.circle,
-            border: Border.all(
-              color: AppColors.primaryPurple,
-              width: 2.2,
-            ),
+            border: Border.all(color: AppColors.primaryPurple, width: 2.2),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primaryPurple.withValues(alpha: 0.2),
@@ -409,10 +482,7 @@ class _TrianglePointerPainter extends CustomPainter {
   final Color borderColor;
   final Color fillColor;
 
-  _TrianglePointerPainter({
-    required this.borderColor,
-    required this.fillColor,
-  });
+  _TrianglePointerPainter({required this.borderColor, required this.fillColor});
 
   @override
   void paint(Canvas canvas, Size size) {

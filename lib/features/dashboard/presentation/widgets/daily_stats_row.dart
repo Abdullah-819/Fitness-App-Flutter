@@ -92,16 +92,18 @@ class _StatColumn extends StatelessWidget {
       children: [
         Icon(icon, color: iconColor, size: 24),
         const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-            color: p.textPrimary,
-            letterSpacing: -0.3,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: p.textPrimary,
+              letterSpacing: -0.3,
+            ),
+            maxLines: 1,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 3),
         Text(

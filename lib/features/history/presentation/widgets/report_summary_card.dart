@@ -32,7 +32,10 @@ class ReportSummaryCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      padding: EdgeInsets.symmetric(
+        horizontal: MediaQuery.sizeOf(context).width < 360 ? 14 : 20,
+        vertical: 22,
+      ),
       decoration: BoxDecoration(
         color: palette.card,
         borderRadius: BorderRadius.circular(24),
@@ -56,22 +59,18 @@ class ReportSummaryCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const FootprintsIcon(
-                size: 26,
-                color: AppColors.primaryPurple,
-              ),
+              const FootprintsIcon(size: 26, color: AppColors.primaryPurple),
               const SizedBox(width: 10),
               Flexible(
-                child: Text(
-                  totalSteps,
+                child: _CountUpText(
+                  value: totalSteps,
+                  fit: true,
                   style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w800,
                     color: palette.textPrimary,
                     letterSpacing: -0.5,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -101,11 +100,7 @@ class ReportSummaryCard extends StatelessWidget {
                   label: 'time',
                 ),
               ),
-              Container(
-                height: 48,
-                width: 1,
-                color: palette.divider,
-              ),
+              Container(height: 48, width: 1, color: palette.divider),
               Expanded(
                 child: _SummaryColumn(
                   icon: LucideIcons.flame,
@@ -114,11 +109,7 @@ class ReportSummaryCard extends StatelessWidget {
                   label: 'kcal',
                 ),
               ),
-              Container(
-                height: 48,
-                width: 1,
-                color: palette.divider,
-              ),
+              Container(height: 48, width: 1, color: palette.divider),
               Expanded(
                 child: _SummaryColumn(
                   icon: LucideIcons.mapPin,
@@ -131,6 +122,61 @@ class ReportSummaryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Animates the numeric parts of a formatted string (e.g. "12,345", "3.4",
+/// "1h 20m") from zero up to their value. Non-numeric text is kept as is.
+class _CountUpText extends StatelessWidget {
+  final String value;
+  final TextStyle style;
+  final bool fit;
+
+  const _CountUpText({
+    required this.value,
+    required this.style,
+    this.fit = false,
+  });
+
+  static final RegExp _number = RegExp(r'\d[\d,]*\.?\d*');
+
+  String _format(double t) {
+    return value.replaceAllMapped(_number, (m) {
+      final raw = m.group(0)!;
+      final target = double.tryParse(raw.replaceAll(',', ''));
+      if (target == null) return raw;
+      final decimals = raw.contains('.') ? raw.split('.').last.length : 0;
+      final current = target * t;
+      var text = current.toStringAsFixed(decimals);
+      if (raw.contains(',')) {
+        final parts = text.split('.');
+        parts[0] = parts[0].replaceAllMapped(
+          RegExp(r'\B(?=(\d{3})+(?!\d))'),
+          (_) => ',',
+        );
+        text = parts.join('.');
+      }
+      return text;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      key: ValueKey(value),
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, _) {
+        final text = Text(
+          _format(t),
+          style: style,
+          maxLines: 1,
+          overflow: fit ? TextOverflow.visible : TextOverflow.ellipsis,
+        );
+        return fit ? FittedBox(fit: BoxFit.scaleDown, child: text) : text;
+      },
     );
   }
 }
@@ -157,16 +203,15 @@ class _SummaryColumn extends StatelessWidget {
       children: [
         Icon(icon, color: iconColor, size: 22),
         const SizedBox(height: 8),
-        Text(
-          value,
+        _CountUpText(
+          value: value,
+          fit: true,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
             color: palette.textPrimary,
             letterSpacing: -0.3,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
         Text(

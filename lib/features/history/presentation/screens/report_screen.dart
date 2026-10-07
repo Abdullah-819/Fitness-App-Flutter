@@ -18,10 +18,7 @@ import '../widgets/statistics_chart_card.dart';
 class ReportScreen extends StatelessWidget {
   final bool embeddedInDashboard;
 
-  const ReportScreen({
-    super.key,
-    this.embeddedInDashboard = false,
-  });
+  const ReportScreen({super.key, this.embeddedInDashboard = false});
 
   @override
   Widget build(BuildContext context) {
@@ -53,10 +50,7 @@ class ReportScreen extends StatelessWidget {
         leading: const Padding(
           padding: EdgeInsets.only(left: 20),
           child: Center(
-            child: FootprintsIcon(
-              size: 28,
-              color: AppColors.primaryPurple,
-            ),
+            child: FootprintsIcon(size: 28, color: AppColors.primaryPurple),
           ),
         ),
         title: Text(
@@ -79,9 +73,7 @@ class ReportScreen extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: SafeArea(
-        child: content,
-      ),
+      body: SafeArea(child: content),
     );
   }
 }
@@ -93,60 +85,75 @@ class _ReportScreenContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final history = Provider.of<HistoryProvider>(context);
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 16,
+    final media = MediaQuery.of(context);
+    final hPad = media.size.width < 360 ? 14.0 : 20.0;
+
+    // Clamp system font scaling and cap content width for tablets/large phones.
+    return MediaQuery(
+      data: media.copyWith(
+        textScaler: media.textScaler.clamp(
+          minScaleFactor: 0.85,
+          maxScaleFactor: 1.2,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Overview Summary Card (Total Steps All Time, Time, Kcal, Km)
-          FadeSlideIn(
-            child: ReportSummaryCard(
-              totalSteps: history.formattedTotalSteps,
-              timeString: history.formattedTotalTime,
-              caloriesString: history.formattedTotalCalories,
-              distanceKmString: history.formattedTotalDistance,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. Overview Summary Card (Total Steps All Time, Time, Kcal, Km)
+                FadeSlideIn(
+                  child: ReportSummaryCard(
+                    totalSteps: history.formattedTotalSteps,
+                    timeString: history.formattedTotalTime,
+                    caloriesString: history.formattedTotalCalories,
+                    distanceKmString: history.formattedTotalDistance,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // 2. "Statistics" Bar Chart Card
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 120),
+                  child: StatisticsChartCard(
+                    days: history.weeklyChartDays,
+                    periodFilter: history.periodFilter,
+                    metricType: history.metricType,
+                    selectedIndex: history.selectedBarIndex,
+                    onPeriodChanged: history.setPeriodFilter,
+                    onMetricChanged: history.setMetricType,
+                    onSelectDay: history.selectBarIndex,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // 3. "Your Progress" Monthly Calendar Progress Card
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 240),
+                  child: ProgressCalendarCard(
+                    month: history.currentMonth,
+                    days: history.buildMonthCalendarGrid(),
+                    selectedDay: history.selectedCalendarDay,
+                    periodFilter: history.periodFilter,
+                    onPeriodChanged: history.setPeriodFilter,
+                    onSelectDay: history.selectCalendarDay,
+                    onPreviousMonth: history.previousMonth,
+                    onNextMonth: history.nextMonth,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+              ],
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          // 2. "Statistics" Bar Chart Card
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 120),
-            child: StatisticsChartCard(
-              days: history.weeklyChartDays,
-              periodFilter: history.periodFilter,
-              metricType: history.metricType,
-              selectedIndex: history.selectedBarIndex,
-              onPeriodChanged: history.setPeriodFilter,
-              onMetricChanged: history.setMetricType,
-              onSelectDay: history.selectBarIndex,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // 3. "Your Progress" Monthly Calendar Progress Card
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 240),
-            child: ProgressCalendarCard(
-              month: history.currentMonth,
-              days: history.buildMonthCalendarGrid(),
-              selectedDay: history.selectedCalendarDay,
-              periodFilter: history.periodFilter,
-              onPeriodChanged: history.setPeriodFilter,
-              onSelectDay: history.selectCalendarDay,
-              onPreviousMonth: history.previousMonth,
-              onNextMonth: history.nextMonth,
-            ),
-          ),
-
-          const SizedBox(height: 24),
-        ],
+        ),
       ),
     );
   }
