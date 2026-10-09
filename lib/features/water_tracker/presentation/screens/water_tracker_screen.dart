@@ -1,7 +1,17 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
+import '../../../../widgets/fade_slide_in.dart';
+import '../widgets/animated_int_text.dart';
+import '../widgets/floating_amount_label.dart';
+import '../widgets/water_drink_button.dart';
 import '../widgets/water_droplet_indicator.dart';
 import '../widgets/water_history_chart.dart';
+import '../widgets/water_sheets.dart';
 
 class WaterTrackerScreen extends StatefulWidget {
   const WaterTrackerScreen({super.key});
@@ -14,6 +24,12 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
   int _currentMl = 1750;
   int _targetGoalMl = 4000;
   String _selectedRange = 'This Week';
+
+  // Animation state
+  int _splashCount = 0; // bumps on every drink -> splash + ripples
+  int _lastAddedMl = 0;
+  bool _isDrinking = false;
+  Timer? _drinkTimer;
 
   // Sample history records matching the design (Days 16 - 22)
   final List<WaterDailyRecord> _historyRecords = const [
@@ -28,488 +44,330 @@ class _WaterTrackerScreenState extends State<WaterTrackerScreen> {
 
   double get _progress => (_currentMl / _targetGoalMl).clamp(0.0, 1.0);
   int get _percentage => (_progress * 100).round();
+  bool get _goalReached => _currentMl >= _targetGoalMl;
 
-  String _formatNumber(int value) {
-    if (value >= 1000) {
-      final whole = value ~/ 1000;
-      final rem = (value % 1000).toString().padLeft(3, '0');
-      return '$whole,$rem';
-    }
-    return value.toString();
+  @override
+  void dispose() {
+    _drinkTimer?.cancel();
+    super.dispose();
   }
 
-  void _onDrinkPressed() {
-    _showAddWaterModal();
+  Future<void> _onDrinkPressed() async {
+    final amount = await showAddWaterSheet(context);
+    if (amount != null && mounted) _addWater(amount);
   }
 
   void _addWater(int amount) {
+    final wasReached = _goalReached;
+    HapticFeedback.mediumImpact();
+
     setState(() {
       _currentMl = (_currentMl + amount).clamp(0, 10000);
+      _lastAddedMl = amount;
+      _splashCount++;
+      _isDrinking = true;
     });
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added $amount ml of water!'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-        backgroundColor: const Color(0xFF7C3AED),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+
+    if (!wasReached && _goalReached) {
+      Future<void>.delayed(const Duration(milliseconds: 600), () {
+        HapticFeedback.heavyImpact();
+      });
+    }
+
+    // Back to "Drink" once the level has finished rising.
+    _drinkTimer?.cancel();
+    _drinkTimer = Timer(const Duration(milliseconds: 1600), () {
+      if (mounted) setState(() => _isDrinking = false);
+    });
   }
 
-  void _showAddWaterModal() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 44,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Add Water Intake',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Choose amount to log for today',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildPortionButton(ctx, 150, '150 ml', Icons.local_cafe_outlined),
-                    _buildPortionButton(ctx, 250, '250 ml', Icons.water_drop_outlined),
-                    _buildPortionButton(ctx, 500, '500 ml', Icons.sports_bar_outlined),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    _addWater(250);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7C3AED),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: const Text(
-                    'Quick Add +250 ml',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+  Future<void> _openSettings() async {
+    final goal = await showWaterGoalDialog(context, _targetGoalMl);
+    if (goal != null && mounted) {
+      setState(() => _targetGoalMl = goal);
+    }
+  }
+
+  Future<void> _openRangeFilter() async {
+    final range = await showWaterRangeSheet(context, _selectedRange);
+    if (range != null && mounted) {
+      setState(() => _selectedRange = range);
+    }
+  }
+
+  BoxDecoration _cardDecoration(AppPalette p) => BoxDecoration(
+        color: p.card,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: p.isDark ? p.divider : const Color(0xFFECEEF2)),
+        boxShadow: p.isDark
+            ? null
+            : const [
+                BoxShadow(
+                  color: Color(0x08000000),
+                  blurRadius: 18,
+                  offset: Offset(0, 6),
                 ),
               ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPortionButton(
-    BuildContext ctx,
-    int amount,
-    String label,
-    IconData icon,
-  ) {
-    return InkWell(
-      onTap: () {
-        Navigator.of(ctx).pop();
-        _addWater(amount);
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8F9FB),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: const Color(0xFF7C3AED), size: 26),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showSettingsModal() {
-    int tempGoal = _targetGoalMl;
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              title: const Text(
-                'Water Goal Settings',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Set your daily water intake goal:',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed: tempGoal > 1000
-                            ? () => setDialogState(() => tempGoal -= 250)
-                            : null,
-                        icon: const Icon(Icons.remove_circle_outline),
-                        color: const Color(0xFF7C3AED),
-                      ),
-                      Text(
-                        '${_formatNumber(tempGoal)} ml',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: tempGoal < 8000
-                            ? () => setDialogState(() => tempGoal += 250)
-                            : null,
-                        icon: const Icon(Icons.add_circle_outline),
-                        color: const Color(0xFF7C3AED),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: Color(0xFF6B7280))),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _targetGoalMl = tempGoal;
-                    });
-                    Navigator.of(ctx).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7C3AED),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Text('Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showFilterMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 12),
-              ...['This Week', 'Last Week', 'This Month'].map((range) {
-                final isSelected = range == _selectedRange;
-                return ListTile(
-                  title: Text(
-                    range,
-                    style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected
-                          ? const Color(0xFF7C3AED)
-                          : const Color(0xFF1F2937),
-                    ),
-                  ),
-                  trailing: isSelected
-                      ? const Icon(Icons.check, color: Color(0xFF7C3AED))
-                      : null,
-                  onTap: () {
-                    setState(() {
-                      _selectedRange = range;
-                    });
-                    Navigator.of(ctx).pop();
-                  },
-                );
-              }),
-              const SizedBox(height: 12),
-            ],
-          ),
-        );
-      },
-    );
-  }
+      );
 
   @override
   Widget build(BuildContext context) {
+    final p = AppPalette.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: p.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: p.background,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
+          icon: Icon(Icons.arrow_back, color: p.textPrimary),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: const Text(
+        title: Text(
           'Water Tracker',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF111827),
+            color: p.textPrimary,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Color(0xFF111827)),
-            onPressed: _showSettingsModal,
+            icon: Icon(Icons.settings_outlined, color: p.textPrimary),
+            onPressed: _openSettings,
           ),
           const SizedBox(width: 4),
         ],
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
         child: Column(
           children: [
             // ================= 1. TOP CARD (Droplet & Drink) =================
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: const Color(0xFFECEEF2)),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x08000000),
-                    blurRadius: 18,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Teardrop Fluid Gauge
-                  WaterDropletIndicator(
-                    progress: _progress,
-                    width: 170,
-                    height: 215,
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // Percentage Text
-                  Text(
-                    '$_percentage%',
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF111827),
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  // Current / Target text
-                  Text(
-                    '${_formatNumber(_currentMl)} / ${_formatNumber(_targetGoalMl)} ml',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // "Drink" Capsule Button
-                  SizedBox(
-                    width: 165,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _onDrinkPressed,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7C3AED),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(26),
-                        ),
-                        shadowColor: const Color(0x667C3AED),
+            FadeSlideIn(
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+                decoration: _cardDecoration(p),
+                child: Column(
+                  children: [
+                    // Teardrop gauge with the floating "+250 ml" label
+                    TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0.8, end: 1),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOutBack,
+                      builder: (context, scale, child) =>
+                          Transform.scale(scale: scale, child: child),
+                      child: Stack(
+                        alignment: Alignment.topCenter,
+                        clipBehavior: Clip.none,
+                        children: [
+                          WaterDropletIndicator(
+                            progress: _progress,
+                            width: 170,
+                            height: 215,
+                            isDark: p.isDark,
+                            splashTrigger: _splashCount,
+                            celebrate: _goalReached,
+                          ),
+                          Positioned(
+                            top: 70,
+                            child: FloatingAmountLabel(
+                              amountMl: _lastAddedMl,
+                              triggerId: _splashCount,
+                            ),
+                          ),
+                        ],
                       ),
-                      child: const Text(
-                        'Drink',
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    // Percentage (counts up / down smoothly)
+                    AnimatedIntText(
+                      value: _percentage,
+                      builder: (context, value) => Text(
+                        '$value%',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
+                          fontSize: 36,
+                          fontWeight: FontWeight.w800,
+                          color: p.textPrimary,
+                          letterSpacing: -0.5,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 6),
+
+                    // Current / Target
+                    AnimatedIntText(
+                      value: _currentMl,
+                      builder: (context, current) => AnimatedIntText(
+                        value: _targetGoalMl,
+                        builder: (context, goal) => Text(
+                          '${formatMl(current)} / ${formatMl(goal)} ml',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: p.textSecondary,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Goal reached chip grows in / out smoothly
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutCubic,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 350),
+                        switchInCurve: Curves.easeOutBack,
+                        transitionBuilder: (child, animation) =>
+                            FadeTransition(
+                          opacity: animation,
+                          child: ScaleTransition(scale: animation, child: child),
+                        ),
+                        child: _goalReached
+                            ? Padding(
+                                key: const ValueKey('goal_chip'),
+                                padding: const EdgeInsets.only(top: 14),
+                                child: _GoalReachedChip(isDark: p.isDark),
+                              )
+                            : const SizedBox.shrink(key: ValueKey('no_chip')),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    WaterDrinkButton(
+                      isDrinking: _isDrinking,
+                      onPressed: _onDrinkPressed,
+                    ),
+                  ],
+                ),
               ),
             ),
 
             const SizedBox(height: 20),
 
             // ================= 2. BOTTOM CARD (History) =================
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: const Color(0xFFECEEF2)),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x08000000),
-                    blurRadius: 18,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // History Header Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'History',
-                        style: TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: _showFilterMenu,
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 160),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+                decoration: _cardDecoration(p),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'History',
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            color: p.textPrimary,
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9FAFB),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: const Color(0xFFE5E7EB),
+                        ),
+                        InkWell(
+                          onTap: _openRangeFilter,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: p.card,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: p.border),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Label cross-fades when the range changes
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  child: Text(
+                                    _selectedRange,
+                                    key: ValueKey(_selectedRange),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: p.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  size: 18,
+                                  color: p.textSecondary,
+                                ),
+                              ],
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _selectedRange,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF374151),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down,
-                                size: 18,
-                                color: Color(0xFF6B7280),
-                              ),
-                            ],
-                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 18),
-                  const Divider(color: Color(0xFFF3F4F6), height: 1),
-                  const SizedBox(height: 18),
+                    const SizedBox(height: 18),
+                    Divider(color: p.divider, height: 1),
+                    const SizedBox(height: 18),
 
-                  // 7-Day History Bar Chart
-                  WaterHistoryChart(
-                    records: _historyRecords,
-                    maxAmountMl: 4000,
-                    initialSelectedDay: 20,
-                  ),
-                ],
+                    WaterHistoryChart(
+                      records: _historyRecords,
+                      maxAmountMl: 4000,
+                      initialSelectedDay: 20,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _GoalReachedChip extends StatelessWidget {
+  final bool isDark;
+
+  const _GoalReachedChip({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.success.withValues(alpha: 0.18)
+            : AppColors.successSecondary,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.emoji_events_outlined, size: 18, color: AppColors.success),
+          SizedBox(width: 6),
+          Text(
+            'Daily goal reached!',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.success,
+            ),
+          ),
+        ],
       ),
     );
   }
