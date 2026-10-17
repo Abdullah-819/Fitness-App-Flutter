@@ -20,85 +20,82 @@ A privacy-friendly Flutter application for Android that helps users track their 
 
 ---
 
-The app uses the device's built-in motion and activity sensors to automatically count steps, with no external hardware, wearables, or manual logging required.
+<div align="center">
+
+<img src="architectures/step_counter_architecture.svg" alt="TrackFit system architecture" width="100%"/>
+
+<sub>Full-resolution diagram: <a href="architectures/step_counter_architecture.svg">SVG</a> · <a href="architectures/step_counter_architecture.png">PNG</a></sub>
+
+</div>
 
 ## Overview
 
-Step Counter & Walking Goals lets users set a personal daily step goal and visualize their progress in real time through a progress ring on the home dashboard. Alongside the live step count, the app estimates distance walked and maintains a running history of past days, giving users insight into both daily activity and long-term consistency.
+TrackFit is a privacy-friendly Flutter app for Android that counts your steps with the phone's built-in motion sensor, shows live progress toward a personal daily goal, and keeps a history of past days. Around that core sit live GPS tracking, a water tracker, a weight tracker with BMI, and a preferences hub, all in a polished light and dark UI.
 
-To encourage habit-building, the app includes a streak system that tracks consecutive days a goal has been met, along with a weekly chart that visualizes step trends. A lightweight reminder notification nudges users who are falling behind their daily target, and an optional data export feature allows users to save or share their walking history outside the app.
-
-The app is deliberately minimal: no user account, no sign-up, and no social features. All step data is stored locally on the user's device, making the app privacy-respecting by default while still delivering real, everyday value.
+There is no wearable and no manual logging. Steps, goals, history, weight and preferences are stored on the device. The only network use is loading map tiles for live tracking.
 
 This project was built as a semester project for a Mobile Application Development course.
 
 ## Features
 
-- Automatic step counting using native device sensors
-- Custom daily step goal configuration
-- Real-time progress visualization with a home dashboard progress ring
-- Estimated distance walked
-- Historical log of daily step counts
-- Streak tracking for consecutive goal completions
-- Weekly step trend chart
-- Reminder notifications for users falling behind their goal
-- Local data export/sharing of walking history
-- Fully offline, on-device data storage with no account or sign-up required
+**Activity**
+- Automatic step counting from the native step sensor, resumed after restarts and caught up after the app was closed
+- Custom daily step goal with a live progress ring and a goal-completed celebration
+- Weekly progress card and a streak model for consecutive goal days
+- Live tracking: GPS route on a map, distance, time, and a session summary
+
+**History & reports**
+- Daily history, a progress calendar, statistics charts, and a date-range report
+
+**Health trackers**
+- **Water tracker:** animated droplet gauge with splash effect, quick-add sheet, goal dialog, and intake history chart
+- **Weight tracker:** animated weight trend chart with a pin tooltip, range filter (3 / 6 / 12 months), add-weight sheet, and a BMI gauge with an editable height
+
+**Account & settings**
+- Onboarding wizard (gender, lifestyle, age, height, weight, step goal), sign in / sign up, OTP and password reset
+- Personal Info with full create, read, update and delete
+- **Preferences:** gender, age, height, weight, units (metric or imperial), step goal, sensitivity, step length, first day of week, and daily reminder with time
+- Light and dark theme switching, developers page
 
 ## Tech Stack
 
-### Core
-
-- **Flutter** - Cross-platform UI toolkit used to build the application
-- **Dart** - Programming language used throughout the app
-
-### Platform
-
-- **Android** - Sole target platform for this project (iOS, web, and desktop targets are excluded)
-- **Kotlin** - Android platform-specific native code (`MainActivity`)
-- **Gradle** - Android build system
-
-### State Management
-
-- **provider** - Application state handling and dependency access across features
-
-### Planned Packages and Tools
-
-- **Sensors package** (e.g. `sensors_plus` / `pedometer`) - Access to device accelerometer and step-detection APIs
-- **Local storage** (e.g. `sqflite` / `hive` / `shared_preferences`) - On-device persistence for step history, goals, and settings
-- **Charting library** (e.g. `fl_chart` / `syncfusion_flutter_charts`) - Weekly step trend visualization
-- **Local notifications** (e.g. `flutter_local_notifications`) - Daily goal reminder nudges
-- **File/data export** (e.g. `share_plus` / `csv`) - Exporting and sharing walking history
-
-### Tooling
-
-- **Flutter SDK** (^3.13.2 Dart SDK constraint)
-- **flutter_lints** - Static analysis and recommended lint rules
-- **Android Studio / VS Code** - Development environment
-- **Git & GitHub** - Version control and source hosting
+| Area | Technology |
+| :-- | :-- |
+| Framework | **Flutter** (Dart SDK ^3.13.2) |
+| State management | `provider` (`ChangeNotifier`) |
+| Local storage | `hive` and `hive_flutter` |
+| Sensors | `pedometer` (step counter), `geolocator` (GPS) |
+| Maps | `flutter_map` and `latlong2` |
+| Permissions | `permission_handler` |
+| UI extras | `lucide_icons_flutter`, `curved_navigation_bar`, `confetti`, `loading_animation_widget`, `fluttertoast` |
+| Platform | **Android** only (Kotlin `MainActivity`, Gradle) |
+| Quality | `flutter_test`, `flutter_lints` |
 
 ## Architecture
 
-The application follows a layered architecture that separates UI, state management, dependency wiring, domain logic, and platform services, allowing the team to work on distinct layers in parallel without conflicts.
+The app is a layered, feature-first design. Each layer only talks to the layer directly beneath it, so UI, state, models, services and storage can be worked on in parallel.
 
-![Step Counter Architecture Diagram](architectures/step_counter_architecture.png)
+| # | Layer | Responsibility |
+| :-: | :-- | :-- |
+| 01 | **Presentation** | One folder per feature under `lib/features/`, each with `presentation/screens` and `presentation/widgets`. |
+| 02 | **State & shared UI** | `ThemeController` and `TrackProvider` via Provider, design tokens (`AppPalette`, `AppColors`), shared widgets, and page transitions. |
+| 03 | **Domain models** | Typed entities (`UserModel`, step / goal / history / streak models, `TrackSession`, `WeightEntry`, `AppPreferences`) with Hive adapters for persisted ones. |
+| 04 | **Core services** | `AuthService`, `SessionStore`, `StepSensorService`, `StepSessionStore`, `LocationTrackingService`, `TrackSessionStore`, `PermissionService`, `PreferencesStore`, `LocalDatabase`. |
+| 05 | **Local persistence** | Hive boxes: `step_records`, `goals`, `daily_history`, `streaks`, `step_session`, `session`, `phone_accounts`, `track_sessions`, `preferences`. |
+| 06 | **Device & platform** | Android step-counter sensor, GPS, map tiles, notifications and the app sandbox. |
 
-**Flow summary:**
+The strip at the bottom of the diagram is the delivery pipeline: develop in VS Code or Android Studio, build with the Flutter SDK and Gradle, drop the APK into `releases/`, and track everything in Git and GitHub.
 
-1. **Presentation Layer** - Each screen (Home, Goals, History, Streak, Settings, Export) is bound to its own `Provider` for state management.
-2. **Dependency Injection** - Providers resolve their dependencies through a central `ServiceLocator` (`core/di`), which constructs and exposes repository instances.
-3. **Domain / Data Access Layer** - Repositories (`StepRepository`, `GoalRepository`, `HistoryRepository`, `StreakRepository`) mediate between the UI and both core services and local persistence.
-4. **Core Services** - `SensorService` reads step data from the device's native sensors; `NotificationService` triggers daily goal reminders.
-5. **Local Persistence** - Repositories read and write structured data (step history, streaks) to a local database (SQLite/Hive) and simple key-value data (settings, goals) to shared preferences.
-6. **Device Hardware** - The Android OS exposes the accelerometer and step detector sensor APIs, streamed natively into the app process.
+Notes on the current state:
+- The water and weight trackers keep their entries in memory for now; persisting them is a natural next step.
+- Sensitivity, step length, first day of week and reminder preferences are saved but not yet consumed by the step sensor, weekly card, or a notification scheduler.
+- `core/di/ServiceLocator` is a placeholder for repository wiring.
 
-The bottom strip of the diagram shows the local build pipeline: development in VS Code / Android Studio, compiled via the Flutter SDK and Gradle, producing an APK that is placed in the `releases/` folder and version-controlled through Git and GitHub.
-
-Additional and updated architecture diagrams for individual features are maintained in the [`architectures/`](architectures/) folder.
+Additional architecture diagrams are kept in [`architectures/`](architectures/).
 
 ## Design
 
-Static exports of the UI/UX designs (screens, states, and flows) are kept in the [`design/`](design/) folder for reference during frontend implementation, organized by feature: Dashboard, History, Live Tracking, On-Boardings, Settings, FAQ, and Water Reminder. These are reference snapshots only, not editable design source files.
+Static exports of the UI/UX designs are kept in [`design/`](design/), organized by feature: Dashboard, History, Live Tracking, On-Boardings, Settings, FAQ, Water Remind, Weight Tracker and Preferences. They are reference snapshots only, not editable design source files.
 
 ### Screens
 
@@ -108,9 +105,13 @@ Static exports of the UI/UX designs (screens, states, and flows) are kept in the
 | :---------------------------------------------------------------------------: | :--------------------------------------------------------------------------: | :-------------------------------------------------------------------: |
 | <img src="design/On-Boardings/17_Light_sign in filled form.png" width="220"/> | <img src="design/On-Boardings/7_Light_sign up filled form.png" width="220"/> | <img src="design/DashBoard/25_Light_home - default.png" width="220"/> |
 
-|                              Water Level                               |                          Live Tracking                          |
-| :--------------------------------------------------------------------: | :-------------------------------------------------------------: |
-| <img src="design/Water Remind/47_Dark_water tracker.png" width="220"/> | <img src="design/LiveTracking/30_Light_track.png" width="220"/> |
+|                              Water Level                               |                          Live Tracking                          |                              Weight Tracker                              |
+| :--------------------------------------------------------------------: | :-------------------------------------------------------------: | :----------------------------------------------------------------------: |
+| <img src="design/Water Remind/47_Dark_water tracker.png" width="220"/> | <img src="design/LiveTracking/30_Light_track.png" width="220"/> | <img src="design/Weight Tracker/50_Light_weight tracker.png" width="220"/> |
+
+|                                 Preferences                                 |
+| :-------------------------------------------------------------------------: |
+| <img src="design/Prefrences/51_Light_settings - preferences.png" width="220"/> |
 
 </div>
 
@@ -118,84 +119,34 @@ Static exports of the UI/UX designs (screens, states, and flows) are kept in the
 
 ```text
 Fitness-App-Flutter/
-│
-├── assets/                          # Static media assets used by the app
-│   ├── icons/                       # Transparent icon assets (app_logo_white, app_logo_purple)
-│   └── images/                      # Screen mockups and brand artwork (footprints, TrackFit logo)
-│
-├── design/                          # Reference UI/UX screens from Figma (not used in code)
-│   ├── DashBoard/
-│   ├── On-Boardings/
-│   └── ...
-│
-├── lib/                             # All Flutter Dart source code
-│   │
-│   ├── main.dart                    # App entry point (launches SplashScreen & initial routes)
-│   │
-│   ├── core/                        # Global resources shared across the entire app
-│   │   ├── constants/               # Colors (#7F27FF), themes, and asset paths
-│   │   └── di/                      # ServiceLocator (dependency wiring for services/repos)
-│   │
-│   └── features/                    # Modular feature directories (one folder per app feature)
-│       │
-│       ├── splash/                  # Splash Screen feature
-│       │   └── presentation/
-│       │       ├── screens/         # splash_screen.dart (the animated startup screen)
-│       │       └── widgets/         # fading_spinner.dart, footprints_icon.dart
-│       │
-│       ├── onboarding/               # Onboarding & Welcome feature
-│       │   └── presentation/
-│       │       └── screens/         # welcome_screen.dart ("Let's Get Started!")
-│       │
-│       ├── auth/                    # Sign-in / authentication feature
-│       │   ├── data/                # auth_service.dart (auth data access)
-│       │   ├── domain/
-│       │   │   └── models/          # user_model.dart
-│       │   └── presentation/
-│       │       ├── screens/         # sign_in_screen.dart
-│       │       └── widgets/         # custom_text_field.dart, social_sign_in_button.dart, etc.
-│       │
-│       ├── home/                    # Home dashboard feature
-│       │   ├── presentation/
-│       │   │   ├── screens/         # home_screen.dart
-│       │   │   └── widgets/         # home-specific widgets (progress ring, etc.)
-│       │   └── providers/           # Home screen state management
-│       │
-│       ├── goals/                   # Daily step goal configuration feature (scaffolded)
-│       │   ├── presentation/
-│       │   │   ├── screens/
-│       │   │   └── widgets/
-│       │   └── providers/
-│       │
-│       ├── history/                 # Historical step log feature (scaffolded)
-│       │   ├── presentation/
-│       │   │   ├── screens/
-│       │   │   └── widgets/
-│       │   └── providers/
-│       │
-│       ├── streak/                  # Consecutive goal streak tracking feature (scaffolded)
-│       │   ├── presentation/
-│       │   │   ├── screens/
-│       │   │   └── widgets/
-│       │   └── providers/
-│       │
-│       ├── settings/                # App settings feature (scaffolded)
-│       │   ├── presentation/
-│       │   │   ├── screens/
-│       │   │   └── widgets/
-│       │   └── providers/
-│       │
-│       └── export/                  # Data export/sharing feature (scaffolded)
-│           ├── presentation/
-│           └── providers/
-│
-├── test/                            # Automated widget and unit tests
-│   └── features/splash/             # splash_screen_test.dart
-│
-└── pubspec.yaml                     # Dependencies and registered asset paths
+├── architectures/                   # Architecture diagrams (SVG + PNG)
+├── assets/                          # Icons, images, developer photos
+├── design/                          # Reference UI/UX screens (not used in code)
+├── lib/
+│   ├── main.dart                    # Entry point, theme provider, routes
+│   ├── core/
+│   │   ├── config/  constants/      # App config, colors, asset paths
+│   │   ├── di/                      # ServiceLocator
+│   │   ├── navigation/              # AppPageRoute transitions
+│   │   ├── services/                # LocalDatabase, step sensor, stores, permissions
+│   │   ├── theme/                   # AppPalette, ThemeController, animations
+│   │   └── utils/                   # AppToast
+│   ├── widgets/                     # Shared widgets (animated dropdown, fade-slide-in)
+│   └── features/                    # One folder per feature
+│       ├── splash/  onboarding/  auth/
+│       ├── dashboard/  home/        # Home tab, account tab, bottom nav
+│       ├── track/                   # Live GPS tracking (data, domain, providers, UI)
+│       ├── history/  goals/  streak/
+│       ├── water_tracker/           # Droplet gauge, history chart, sheets
+│       ├── weight_tracker/          # Weight chart, BMI gauge, sheets
+│       ├── settings/                # Personal info, preferences (data + UI)
+│       └── developers/  export/
+├── test/                            # Widget and unit tests, mirrored per feature
+├── releases/                        # Local APK builds (git-ignored)
+└── pubspec.yaml
 ```
 
-Every feature folder under `lib/features/` follows the same shape — `presentation/screens`, `presentation/widgets`, and `providers/` (plus `data/`/`domain/` where a feature owns its own data access, as in `auth/`) — so once you know one feature, you know them all. Folders marked "scaffolded" above (`goals`, `history`, `streak`, `settings`, `export`) are already created and tracked in git (via `.gitkeep`) as the intended home for upcoming feature work, keeping the target structure visible to the whole team even before the code inside them is written.
+Features follow the same shape: `presentation/screens`, `presentation/widgets`, and `providers/`, plus `data/` and `domain/` where a feature owns its own data. Folders that only contain `.gitkeep` (`goals`, `streak`, `export` and parts of `history` and `settings`) are scaffolds for upcoming work.
 
 ## Getting Started
 
@@ -238,7 +189,7 @@ This application targets Android exclusively. iOS, web, Windows, macOS, and Linu
 
 ## Privacy
 
-All step, goal, streak, and history data is stored locally on the user's device. The application does not require an account, does not include social or networked features, and does not transmit user data to any external server.
+Step, goal, history, weight and preference data is stored locally on the device. The app has no backend and does not transmit that data to any server. The one network use is fetching map tiles for the Live Track screen.
 
 ## License
 
