@@ -7,8 +7,10 @@ import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
 import '../../../developers/presentation/screens/developers_screen.dart';
 import '../../../settings/presentation/screens/personal_info_screen.dart';
+import '../../../settings/presentation/screens/preferences_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../water_tracker/presentation/screens/water_tracker_screen.dart';
+import '../../../weight_tracker/presentation/screens/weight_tracker_screen.dart';
 import '../widgets/account_menu_tile.dart';
 import '../widgets/appearance_sheet.dart';
 
@@ -36,6 +38,19 @@ class AccountView extends StatelessWidget {
     final updated = await Navigator.of(context).push<UserModel>(
       AppPageRoute(
         page: PersonalInfoScreen(
+          user: user ?? AuthService.instance.currentUser,
+        ),
+      ),
+    );
+    if (updated != null) {
+      onUserUpdated?.call(updated);
+    }
+  }
+
+  Future<void> _openPreferences(BuildContext context) async {
+    final updated = await Navigator.of(context).push<UserModel>(
+      AppPageRoute(
+        page: PreferencesScreen(
           user: user ?? AuthService.instance.currentUser,
         ),
       ),
@@ -99,7 +114,14 @@ class AccountView extends StatelessWidget {
               icon: LucideIcons.personStanding,
               iconColor: const Color(0xFFFF9500),
               label: 'Weight Tracker',
-              onTap: () => _comingSoon('Weight Tracker'),
+              onTap: () => Navigator.of(context).push(
+                AppPageRoute(
+                  page: WeightTrackerScreen(
+                    initialWeightKg: user?.weightKg,
+                    heightCm: user?.heightCm,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -116,7 +138,7 @@ class AccountView extends StatelessWidget {
             AccountMenuTile(
               icon: LucideIcons.settings,
               label: 'Preferences',
-              onTap: () => _comingSoon('Preferences'),
+              onTap: () => _openPreferences(context),
             ),
             AccountMenuTile(
               icon: LucideIcons.user,
