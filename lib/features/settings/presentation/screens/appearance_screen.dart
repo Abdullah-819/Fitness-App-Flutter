@@ -3,8 +3,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/navigation/page_transitions.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/theme_controller.dart';
+import 'theme_selection_screen.dart';
 
 class AppearanceScreen extends StatelessWidget {
   const AppearanceScreen({super.key});
@@ -62,38 +64,41 @@ class AppearanceScreen extends StatelessWidget {
             style: TextStyle(fontSize: 14, color: p.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: p.card,
-              borderRadius: BorderRadius.circular(16),
-              border: p.isDark ? Border.all(color: p.divider) : null,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  controller.mode == ThemeMode.dark
-                      ? LucideIcons.moon
-                      : LucideIcons.sun,
-                  size: 28,
-                  color: AppColors.primaryPurple,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    _labelFor(controller.mode),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: p.textPrimary,
+          InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () =>
+                Navigator.of(context)
+                    .push(AppPageRoute(page: const ThemeSelectionScreen())),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: p.card,
+                borderRadius: BorderRadius.circular(16),
+                border: p.isDark ? Border.all(color: p.divider) : null,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    controller.mode == ThemeMode.dark
+                        ? LucideIcons.moon
+                        : LucideIcons.sun,
+                    size: 28,
+                    color: AppColors.primaryPurple,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      _labelFor(controller.mode),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: p.textPrimary,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  'Current',
-                  style: TextStyle(fontSize: 13, color: p.textSecondary),
-                ),
-              ],
+                  Icon(Icons.chevron_right, color: p.textSecondary),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
