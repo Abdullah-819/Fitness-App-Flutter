@@ -11,6 +11,7 @@ import '../../../settings/presentation/screens/preferences_screen.dart';
 import '../../../settings/presentation/screens/linked_accounts_screen.dart';
 import '../../../settings/presentation/screens/appearance_screen.dart';
 import '../../../settings/presentation/screens/language_screen.dart';
+import '../../../settings/presentation/screens/faq_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../water_tracker/presentation/screens/water_tracker_screen.dart';
 import '../../../weight_tracker/presentation/screens/weight_tracker_screen.dart';
@@ -173,7 +174,9 @@ class AccountView extends StatelessWidget {
             AccountMenuTile(
               icon: LucideIcons.fileText,
               label: 'Help & Support',
-              onTap: () => _comingSoon('Help & Support'),
+              onTap: () =>
+                  Navigator.of(context)
+                      .push(AppPageRoute(page: const FaqScreen())),
             ),
             AccountMenuTile(
               icon: LucideIcons.logOut,
