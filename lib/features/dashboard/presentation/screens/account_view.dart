@@ -9,11 +9,11 @@ import '../../../developers/presentation/screens/developers_screen.dart';
 import '../../../settings/presentation/screens/personal_info_screen.dart';
 import '../../../settings/presentation/screens/preferences_screen.dart';
 import '../../../settings/presentation/screens/linked_accounts_screen.dart';
+import '../../../settings/presentation/screens/appearance_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../water_tracker/presentation/screens/water_tracker_screen.dart';
 import '../../../weight_tracker/presentation/screens/weight_tracker_screen.dart';
 import '../widgets/account_menu_tile.dart';
-import '../widgets/appearance_sheet.dart';
 
 /// Body of the dashboard "Account" tab (dark theme).
 ///
@@ -153,7 +153,9 @@ class AccountView extends StatelessWidget {
             AccountMenuTile(
               icon: LucideIcons.eye,
               label: 'App Appearance',
-              onTap: () => AppearanceSheet.show(context),
+              onTap: () =>
+                  Navigator.of(context)
+                      .push(AppPageRoute(page: const AppearanceScreen())),
             ),
             AccountMenuTile(
               icon: LucideIcons.chartLine,
