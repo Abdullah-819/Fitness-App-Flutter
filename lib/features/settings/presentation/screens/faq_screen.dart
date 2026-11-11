@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/navigation/page_transitions.dart';
+import 'contact_support_screen.dart';
 
 class FaqScreen extends StatefulWidget {
   const FaqScreen({super.key});
@@ -122,6 +125,22 @@ class _FaqScreenState extends State<FaqScreen> {
                 child: _FaqTile(question: item.question, answer: item.answer),
               ),
             ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () =>
+                Navigator.of(context)
+                    .push(AppPageRoute(page: const ContactSupportScreen())),
+            icon: const Icon(LucideIcons.messageCircle),
+            label: const Text('Contact support'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primaryPurple,
+              side: const BorderSide(color: AppColors.primaryPurple),
+              minimumSize: const Size.fromHeight(50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
         ],
       ),
     );
