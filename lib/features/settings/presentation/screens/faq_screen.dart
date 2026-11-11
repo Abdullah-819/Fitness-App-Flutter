@@ -6,6 +6,7 @@ import '../../../../core/theme/app_palette.dart';
 import '../../../../core/navigation/page_transitions.dart';
 import 'contact_support_screen.dart';
 import 'privacy_policy_screen.dart';
+import 'terms_of_service_screen.dart';
 
 class FaqScreen extends StatefulWidget {
   const FaqScreen({super.key});
@@ -148,6 +149,12 @@ class _FaqScreenState extends State<FaqScreen> {
                 Navigator.of(context)
                     .push(AppPageRoute(page: const PrivacyPolicyScreen())),
             child: const Text('Privacy Policy'),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(context)
+                    .push(AppPageRoute(page: const TermsOfServiceScreen())),
+            child: const Text('Terms of Service'),
           ),
         ],
       ),
