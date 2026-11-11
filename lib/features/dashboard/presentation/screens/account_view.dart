@@ -10,6 +10,7 @@ import '../../../settings/presentation/screens/personal_info_screen.dart';
 import '../../../settings/presentation/screens/preferences_screen.dart';
 import '../../../settings/presentation/screens/linked_accounts_screen.dart';
 import '../../../settings/presentation/screens/appearance_screen.dart';
+import '../../../settings/presentation/screens/language_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../water_tracker/presentation/screens/water_tracker_screen.dart';
 import '../../../weight_tracker/presentation/screens/weight_tracker_screen.dart';
@@ -156,6 +157,13 @@ class AccountView extends StatelessWidget {
               onTap: () =>
                   Navigator.of(context)
                       .push(AppPageRoute(page: const AppearanceScreen())),
+            ),
+            AccountMenuTile(
+              icon: LucideIcons.languages,
+              label: 'App Language',
+              onTap: () =>
+                  Navigator.of(context)
+                      .push(AppPageRoute(page: const LanguageScreen())),
             ),
             AccountMenuTile(
               icon: LucideIcons.chartLine,

@@ -10,6 +10,7 @@ class AppPreferences {
   final int stepLengthCm;
   final String firstDayOfWeek;
   final bool reminderEnabled;
+  final String language;
 
   /// Minutes after midnight.
   final int reminderMinutes;
@@ -21,10 +22,12 @@ class AppPreferences {
     this.firstDayOfWeek = 'Sunday',
     this.reminderEnabled = true,
     this.reminderMinutes = 7 * 60,
+    this.language = 'English',
   });
 
   static const sensitivities = ['Low', 'Medium', 'High'];
   static const weekdays = ['Saturday', 'Sunday', 'Monday'];
+  static const languages = ['English', 'System default'];
 
   AppPreferences copyWith({
     UnitSystem? unitSystem,
@@ -33,6 +36,7 @@ class AppPreferences {
     String? firstDayOfWeek,
     bool? reminderEnabled,
     int? reminderMinutes,
+    String? language,
   }) => AppPreferences(
     unitSystem: unitSystem ?? this.unitSystem,
     sensitivity: sensitivity ?? this.sensitivity,
@@ -40,6 +44,7 @@ class AppPreferences {
     firstDayOfWeek: firstDayOfWeek ?? this.firstDayOfWeek,
     reminderEnabled: reminderEnabled ?? this.reminderEnabled,
     reminderMinutes: reminderMinutes ?? this.reminderMinutes,
+    language: language ?? this.language,
   );
 
   Map<String, Object?> toMap() => {
@@ -49,6 +54,7 @@ class AppPreferences {
     'firstDay': firstDayOfWeek,
     'reminder': reminderEnabled,
     'reminderMinutes': reminderMinutes,
+    'language': language,
   };
 
   factory AppPreferences.fromMap(Map<dynamic, dynamic>? map) {
@@ -56,6 +62,7 @@ class AppPreferences {
     if (map == null) return d;
     final sensitivity = map['sensitivity'] as String?;
     final firstDay = map['firstDay'] as String?;
+    final language = map['language'] as String?;
     return AppPreferences(
       unitSystem: map['unit'] == 'imperial'
           ? UnitSystem.imperial
@@ -64,9 +71,12 @@ class AppPreferences {
           ? sensitivity!
           : d.sensitivity,
       stepLengthCm: map['stepLengthCm'] as int? ?? d.stepLengthCm,
-      firstDayOfWeek: weekdays.contains(firstDay) ? firstDay! : d.firstDayOfWeek,
+      firstDayOfWeek: weekdays.contains(firstDay)
+          ? firstDay!
+          : d.firstDayOfWeek,
       reminderEnabled: map['reminder'] as bool? ?? d.reminderEnabled,
       reminderMinutes: map['reminderMinutes'] as int? ?? d.reminderMinutes,
+      language: languages.contains(language) ? language! : d.language,
     );
   }
 }
@@ -123,9 +133,8 @@ class UnitFormat {
     return '${totalInches ~/ 12}\'${totalInches % 12}"';
   }
 
-  static String length(int cm, UnitSystem u) => u == UnitSystem.metric
-      ? '$cm cm'
-      : '${(cm / _cmPerInch).round()} in';
+  static String length(int cm, UnitSystem u) =>
+      u == UnitSystem.metric ? '$cm cm' : '${(cm / _cmPerInch).round()} in';
 
   static String distanceUnits(UnitSystem u) =>
       u == UnitSystem.metric ? 'kg / cm / km' : 'lbs / ft / mi';
