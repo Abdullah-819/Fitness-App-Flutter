@@ -1,8 +1,8 @@
 <div align="center">
 
-# Step Counter & Walking Goals
+# TrackFit Fitness Application
 
-A privacy-friendly Flutter application for Android that helps users track their daily physical activity and stay motivated toward a healthier lifestyle.
+A privacy-friendly Flutter fitness application for Android that helps users track steps, water intake, weight, BMI, GPS activities, and healthy habits.
 
 </div>
 
@@ -20,15 +20,15 @@ A privacy-friendly Flutter application for Android that helps users track their 
 
 ---
 
-The app uses the device's built-in motion and activity sensors to automatically count steps, with no external hardware, wearables, or manual logging required.
+The app uses the device's built-in motion and activity sensors to automatically count steps, with no external hardware or wearables required.
 
 ## Overview
 
-Step Counter & Walking Goals lets users set a personal daily step goal and visualize their progress in real time through a progress ring on the home dashboard. Alongside the live step count, the app estimates distance walked and maintains a running history of past days, giving users insight into both daily activity and long-term consistency.
+TrackFit lets users set a personal daily step goal and visualize progress in real time through the home dashboard. Alongside the live step count, the app estimates distance walked, maintains a running history, and provides dedicated water and weight tracking screens.
 
-To encourage habit-building, the app includes a streak system that tracks consecutive days a goal has been met, along with a weekly chart that visualizes step trends. A lightweight reminder notification nudges users who are falling behind their daily target, and an optional data export feature allows users to save or share their walking history outside the app.
+To encourage habit-building, the app includes streak tracking, weekly charts, GPS activity tracking, water reminders, weight history, BMI calculation, theme and language preferences, FAQ/support content, and account settings.
 
-The app is deliberately minimal: no user account, no sign-up, and no social features. All step data is stored locally on the user's device, making the app privacy-respecting by default while still delivering real, everyday value.
+The app stores user preferences, profile information, and tracking data locally on the device, making it privacy-respecting by default while still delivering real, everyday value.
 
 This project was built as a semester project for a Mobile Application Development course.
 
@@ -41,9 +41,12 @@ This project was built as a semester project for a Mobile Application Developmen
 - Historical log of daily step counts
 - Streak tracking for consecutive goal completions
 - Weekly step trend chart
-- Reminder notifications for users falling behind their goal
-- Local data export/sharing of walking history
-- Fully offline, on-device data storage with no account or sign-up required
+- GPS live activity tracking with route distance and pace metrics
+- Water intake tracking with history and daily goals
+- Weight history tracking with BMI calculation and charts
+- Local authentication, onboarding, profile, and account settings
+- FAQ, contact support, privacy policy, and terms screens
+- Fully offline, on-device persistence for tracking data and settings
 
 ## Tech Stack
 
@@ -62,13 +65,13 @@ This project was built as a semester project for a Mobile Application Developmen
 
 - **provider** - Application state handling and dependency access across features
 
-### Planned Packages and Tools
+### Integrated Packages and Tools
 
-- **Sensors package** (e.g. `sensors_plus` / `pedometer`) - Access to device accelerometer and step-detection APIs
-- **Local storage** (e.g. `sqflite` / `hive` / `shared_preferences`) - On-device persistence for step history, goals, and settings
-- **Charting library** (e.g. `fl_chart` / `syncfusion_flutter_charts`) - Weekly step trend visualization
-- **Local notifications** (e.g. `flutter_local_notifications`) - Daily goal reminder nudges
-- **File/data export** (e.g. `share_plus` / `csv`) - Exporting and sharing walking history
+- **pedometer** - Access to device step-counting APIs
+- **geolocator** and **flutter_map** - GPS activity tracking and route visualization
+- **hive** and **hive_flutter** - On-device persistence for profiles, goals, history, and settings
+- **provider** - Feature state management
+- **fluttertoast** and **permission_handler** - User feedback and runtime permissions
 
 ### Tooling
 
@@ -85,12 +88,12 @@ The application follows a layered architecture that separates UI, state manageme
 
 **Flow summary:**
 
-1. **Presentation Layer** - Each screen (Home, Goals, History, Streak, Settings, Export) is bound to its own `Provider` for state management.
-2. **Dependency Injection** - Providers resolve their dependencies through a central `ServiceLocator` (`core/di`), which constructs and exposes repository instances.
-3. **Domain / Data Access Layer** - Repositories (`StepRepository`, `GoalRepository`, `HistoryRepository`, `StreakRepository`) mediate between the UI and both core services and local persistence.
-4. **Core Services** - `SensorService` reads step data from the device's native sensors; `NotificationService` triggers daily goal reminders.
-5. **Local Persistence** - Repositories read and write structured data (step history, streaks) to a local database (SQLite/Hive) and simple key-value data (settings, goals) to shared preferences.
-6. **Device Hardware** - The Android OS exposes the accelerometer and step detector sensor APIs, streamed natively into the app process.
+1. **Presentation Layer** - Feature screens and widgets render dashboard, tracking, history, water, weight, authentication, onboarding, and settings flows.
+2. **State Management** - `Provider` and `ChangeNotifier` manage theme, dashboard tracking, history, and live GPS session state.
+3. **Data and Domain Layer** - Feature-specific models and stores manage users, profiles, goals, history, weight entries, preferences, and track sessions.
+4. **Core Services** - Sensor, permission, theme, session, and local database services provide shared platform and persistence behavior.
+5. **Local Persistence** - Hive boxes and feature stores persist tracking data, authentication sessions, profiles, and settings on the device.
+6. **Device Hardware** - Android exposes step sensors and GPS location services through Flutter platform plugins.
 
 The bottom strip of the diagram shows the local build pipeline: development in VS Code / Android Studio, compiled via the Flutter SDK and Gradle, producing an APK that is placed in the `releases/` folder and version-controlled through Git and GitHub.
 
