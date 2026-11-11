@@ -8,6 +8,7 @@ import '../../../auth/domain/models/user_model.dart';
 import '../../../developers/presentation/screens/developers_screen.dart';
 import '../../../settings/presentation/screens/personal_info_screen.dart';
 import '../../../settings/presentation/screens/preferences_screen.dart';
+import '../../../settings/presentation/screens/linked_accounts_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../water_tracker/presentation/screens/water_tracker_screen.dart';
 import '../../../weight_tracker/presentation/screens/weight_tracker_screen.dart';
@@ -50,9 +51,7 @@ class AccountView extends StatelessWidget {
   Future<void> _openPreferences(BuildContext context) async {
     final updated = await Navigator.of(context).push<UserModel>(
       AppPageRoute(
-        page: PreferencesScreen(
-          user: user ?? AuthService.instance.currentUser,
-        ),
+        page: PreferencesScreen(user: user ?? AuthService.instance.currentUser),
       ),
     );
     if (updated != null) {
@@ -67,10 +66,7 @@ class AccountView extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: p.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Logout',
-          style: TextStyle(color: p.textPrimary),
-        ),
+        title: Text('Logout', style: TextStyle(color: p.textPrimary)),
         content: Text(
           'Are you sure you want to log out?',
           style: TextStyle(color: p.textSecondary),
@@ -82,10 +78,7 @@ class AccountView extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Logout',
-              style: TextStyle(color: p.danger),
-            ),
+            child: Text('Logout', style: TextStyle(color: p.danger)),
           ),
         ],
       ),
@@ -106,9 +99,9 @@ class AccountView extends StatelessWidget {
               icon: LucideIcons.droplet,
               iconColor: const Color(0xFF2F9BFF),
               label: 'Water Tracker',
-              onTap: () => Navigator.of(context).push(
-                AppPageRoute(page: const WaterTrackerScreen()),
-              ),
+              onTap: () =>
+                  Navigator.of(context)
+                      .push(AppPageRoute(page: const WaterTrackerScreen())),
             ),
             AccountMenuTile(
               icon: LucideIcons.personStanding,
@@ -131,9 +124,9 @@ class AccountView extends StatelessWidget {
             AccountMenuTile(
               icon: LucideIcons.code,
               label: 'Developers',
-              onTap: () => Navigator.of(
-                context,
-              ).push(AppPageRoute(page: const DevelopersScreen())),
+              onTap: () =>
+                  Navigator.of(context)
+                      .push(AppPageRoute(page: const DevelopersScreen())),
             ),
             AccountMenuTile(
               icon: LucideIcons.settings,
@@ -153,7 +146,9 @@ class AccountView extends StatelessWidget {
             AccountMenuTile(
               icon: LucideIcons.arrowUpDown,
               label: 'Linked Accounts',
-              onTap: () => _comingSoon('Linked Accounts'),
+              onTap: () =>
+                  Navigator.of(context)
+                      .push(AppPageRoute(page: const LinkedAccountsScreen())),
             ),
             AccountMenuTile(
               icon: LucideIcons.eye,
@@ -215,11 +210,7 @@ class _LevelCard extends StatelessWidget {
                     colors: [Color(0xFFFFC83D), Color(0xFFFF7A1A)],
                   ),
                 ),
-                child: Icon(
-                  LucideIcons.medal,
-                  size: 32,
-                  color: Colors.white,
-                ),
+                child: Icon(LucideIcons.medal, size: 32, color: Colors.white),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -237,20 +228,13 @@ class _LevelCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       'You are a rising star! Keep going!',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: p.textPrimary,
-                      ),
+                      style: TextStyle(fontSize: 14, color: p.textPrimary),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(
-                LucideIcons.chevronRight,
-                size: 24,
-                color: p.textPrimary,
-              ),
+              Icon(LucideIcons.chevronRight, size: 24, color: p.textPrimary),
             ],
           ),
         ),
