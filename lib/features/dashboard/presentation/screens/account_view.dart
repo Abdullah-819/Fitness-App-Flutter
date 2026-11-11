@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/navigation/page_transitions.dart';
-import '../../../../core/utils/app_toast.dart';
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/domain/models/user_model.dart';
 import '../../../developers/presentation/screens/developers_screen.dart';
@@ -14,6 +13,7 @@ import '../../../settings/presentation/screens/language_screen.dart';
 import '../../../settings/presentation/screens/faq_screen.dart';
 import '../../../settings/presentation/screens/account_security_screen.dart';
 import '../../../settings/presentation/screens/data_analytics_screen.dart';
+import '../../../settings/presentation/screens/levels_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../water_tracker/presentation/screens/water_tracker_screen.dart';
 import '../../../weight_tracker/presentation/screens/weight_tracker_screen.dart';
@@ -36,8 +36,6 @@ class AccountView extends StatelessWidget {
     this.level = 9,
     this.onUserUpdated,
   });
-
-  void _comingSoon(String feature) => AppToast.info('$feature coming soon');
 
   Future<void> _openPersonalInfo(BuildContext context) async {
     final updated = await Navigator.of(context).push<UserModel>(
@@ -95,7 +93,12 @@ class AccountView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       children: [
-        _LevelCard(level: level, onTap: () => _comingSoon('Levels')),
+        _LevelCard(
+          level: level,
+          onTap: () =>
+              Navigator.of(context)
+                  .push(AppPageRoute(page: LevelsScreen(level: level))),
+        ),
         const SizedBox(height: 16),
         AccountSection(
           children: [
