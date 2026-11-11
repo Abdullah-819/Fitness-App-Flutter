@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/navigation/page_transitions.dart';
 import 'contact_support_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class FaqScreen extends StatefulWidget {
   const FaqScreen({super.key});
@@ -140,6 +141,13 @@ class _FaqScreenState extends State<FaqScreen> {
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
+          ),
+          const SizedBox(height: 10),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(context)
+                    .push(AppPageRoute(page: const PrivacyPolicyScreen())),
+            child: const Text('Privacy Policy'),
           ),
         ],
       ),
