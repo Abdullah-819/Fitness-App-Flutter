@@ -12,6 +12,7 @@ import '../../../settings/presentation/screens/linked_accounts_screen.dart';
 import '../../../settings/presentation/screens/appearance_screen.dart';
 import '../../../settings/presentation/screens/language_screen.dart';
 import '../../../settings/presentation/screens/faq_screen.dart';
+import '../../../settings/presentation/screens/account_security_screen.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../water_tracker/presentation/screens/water_tracker_screen.dart';
 import '../../../weight_tracker/presentation/screens/weight_tracker_screen.dart';
@@ -143,7 +144,8 @@ class AccountView extends StatelessWidget {
             AccountMenuTile(
               icon: LucideIcons.shieldCheck,
               label: 'Account & Security',
-              onTap: () => _comingSoon('Account & Security'),
+              onTap: () => Navigator.of(context)
+                  .push(AppPageRoute(page: AccountSecurityScreen(user: user))),
             ),
             AccountMenuTile(
               icon: LucideIcons.arrowUpDown,
