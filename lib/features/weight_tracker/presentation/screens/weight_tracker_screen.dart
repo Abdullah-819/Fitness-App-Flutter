@@ -29,7 +29,25 @@ class _WeightTrackerScreenState extends State<WeightTrackerScreen> {
     super.initState();
     _heightCm = widget.heightCm ?? 185;
     _entries = _seedEntries();
+    _restoreSavedData();
   }
+
+  Future<void> _restoreSavedData() async {
+    final saved = await WeightStore.instance.load();
+    if (!mounted) return;
+    final entries = saved.entries;
+    setState(() {
+      if (entries != null && entries.isNotEmpty) {
+        _entries = [...entries]..sort((a, b) => a.date.compareTo(b.date));
+      }
+      if (saved.heightCm != null && saved.heightCm! > 0) {
+        _heightCm = saved.heightCm!;
+      }
+    });
+  }
+
+  Future<void> _persist() =>
+      WeightStore.instance.save(entries: _entries, heightCm: _heightCm);
 
   /// Six monthly samples ending this month, matching the design's curve.
   /// The most recent one follows the profile weight when it is known.
@@ -73,11 +91,15 @@ class _WeightTrackerScreenState extends State<WeightTrackerScreen> {
         WeightEntry(date: now, kg: kg.toDouble()),
       ]..sort((a, b) => a.date.compareTo(b.date));
     });
+    await _persist();
   }
 
   Future<void> _editHeight() async {
     final cm = await showEditHeightSheet(context, _heightCm.round());
-    if (cm != null && mounted) setState(() => _heightCm = cm.toDouble());
+    if (cm != null && mounted) {
+      setState(() => _heightCm = cm.toDouble());
+      await _persist();
+    }
   }
 
   Future<void> _openRangeFilter() async {
