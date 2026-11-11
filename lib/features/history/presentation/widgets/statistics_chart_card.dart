@@ -236,6 +236,8 @@ class StatisticsChartCard extends StatelessWidget {
                                     height: tooltipHeight,
                                     width: slotWidth,
                                     child: OverflowBox(
+                                      minWidth: 0,
+                                      minHeight: 0,
                                       maxWidth: 60,
                                       alignment: Alignment.bottomCenter,
                                       child: AnimatedSwitcher(
