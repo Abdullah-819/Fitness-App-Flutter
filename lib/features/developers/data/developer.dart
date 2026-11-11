@@ -61,8 +61,8 @@ const List<Developer> kDevelopers = [
     imageAsset: 'assets/developers/Ahmad Ali.jpeg',
   ),
   Developer(
-    id: 'abdullah-qureshi',
-    name: 'Abdullah Qureshi',
+    id: 'abdullah-javed',
+    name: 'Abdullah Javed',
     role: 'Front-End Developer & UI/UX Designer',
     bio:
         'Designs and implements the look and feel of the app, turning '
@@ -70,6 +70,6 @@ const List<Developer> kDevelopers = [
         'interactions and careful attention to detail.',
     focusAreas: ['UI/UX Design', 'Front-End', 'Interaction Design'],
     githubUsername: 'SyedAbdullahQureshi',
-    imageAsset: 'assets/developers/Abdullah Qureshi.jpeg',
+    imageAsset: 'assets/developers/Abdullah Javed.jpeg',
   ),
 ];

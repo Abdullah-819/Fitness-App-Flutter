@@ -128,11 +128,11 @@ class AuthService {
       initials: 'AA',
     ),
     TeamMemberCredentials(
-      name: 'Abdullah Qureshi',
-      email: 'abdullah.qureshi@trackfit.com',
+      name: 'Abdullah Javed',
+      email: 'abdullah.javed@trackfit.com',
       password: '696969',
       role: 'Frontend Developer',
-      initials: 'AQ',
+      initials: 'AJ',
     ),
   ];
 

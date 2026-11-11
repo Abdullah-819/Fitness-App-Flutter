@@ -437,7 +437,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                 SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    'Tap to auto-fill team credentials (Abdullah Rana, Ahmad Ali, Abdullah Qureshi)',
+                                    'Tap to auto-fill team credentials (Abdullah Rana, Ahmad Ali, Abdullah Javed)',
                                     style: TextStyle(
                                       fontSize: 12.5,
                                       color: AppColors.primaryPurple,

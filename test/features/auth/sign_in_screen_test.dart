@@ -99,7 +99,7 @@ void main() {
       expect(find.text('Select Team Account'), findsOneWidget);
       expect(find.text('Abdullah Rana'), findsOneWidget);
       expect(find.text('Ahmad Ali'), findsOneWidget);
-      expect(find.text('Abdullah Qureshi'), findsOneWidget);
+      expect(find.text('Abdullah Javed'), findsOneWidget);
 
       // Tap on Abdullah Rana
       await tester.tap(find.text('Abdullah Rana'));
