@@ -70,6 +70,6 @@ const List<Developer> kDevelopers = [
         'interactions and careful attention to detail.',
     focusAreas: ['UI/UX Design', 'Front-End', 'Interaction Design'],
     githubUsername: 'SyedAbdullahQureshi',
-    imageAsset: 'assets/developers/Abdullah Javed.jpeg',
+    imageAsset: 'assets/developers/abdullah_javed.jpeg',
   ),
 ];

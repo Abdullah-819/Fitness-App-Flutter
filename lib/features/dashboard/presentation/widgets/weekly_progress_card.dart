@@ -123,9 +123,22 @@ class WeeklyProgressCard extends StatelessWidget {
           const SizedBox(height: 14),
 
           // 7-day circular indicators row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: days.map((day) => _DayItem(data: day)).toList(),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final indicatorSize = math.min(
+                42.0,
+                constraints.maxWidth / days.length,
+              );
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: days
+                    .map(
+                      (day) =>
+                          _DayItem(data: day, indicatorSize: indicatorSize),
+                    )
+                    .toList(),
+              );
+            },
           ),
         ],
       ),
@@ -135,8 +148,9 @@ class WeeklyProgressCard extends StatelessWidget {
 
 class _DayItem extends StatelessWidget {
   final DayProgressData data;
+  final double indicatorSize;
 
-  const _DayItem({required this.data});
+  const _DayItem({required this.data, required this.indicatorSize});
 
   @override
   Widget build(BuildContext context) {
@@ -145,13 +159,13 @@ class _DayItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 42,
-          height: 42,
+          width: indicatorSize,
+          height: indicatorSize,
           child: Stack(
             alignment: Alignment.center,
             children: [
               CustomPaint(
-                size: const Size(42, 42),
+                size: Size.square(indicatorSize),
                 painter: _DayRingPainter(
                   progress: data.progress,
                   isToday: data.isToday,
@@ -162,7 +176,7 @@ class _DayItem extends StatelessWidget {
               Text(
                 '${data.dayNumber}',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: indicatorSize * 15 / 42,
                   fontWeight: FontWeight.w500,
                   color: data.isToday ? AppColors.primaryPurple : p.textPrimary,
                 ),
