@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/local_database.dart';
@@ -51,7 +55,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   static const List<int> _presetStepGoals = [4000, 6000, 8000, 10000, 12000];
 
   // Preset avatar icons
-  static const List<({IconData icon, String label, Color color})> _avatarPresets = [
+  static const List<({IconData icon, String label, Color color})>
+  _avatarPresets = [
     (icon: LucideIcons.user, label: 'Standard', color: AppColors.primaryPurple),
     (icon: LucideIcons.flame, label: 'Fire', color: Color(0xFFFF5722)),
     (icon: LucideIcons.medal, label: 'Champion', color: Color(0xFFFFB300)),
@@ -63,7 +68,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   @override
   void initState() {
     super.initState();
-    _user = widget.user ??
+    _user =
+        widget.user ??
         AuthService.instance.currentUser ??
         const UserModel(
           id: 'user_default',
@@ -108,10 +114,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     _emailController.text = _user.email;
     _phoneController.text = _user.phone ?? '';
     _ageController.text = _user.age != null ? _user.age.toString() : '';
-    _heightController.text =
-        _user.heightCm != null ? _user.heightCm!.round().toString() : '';
-    _weightController.text =
-        _user.weightKg != null ? _user.weightKg!.round().toString() : '';
+    _heightController.text = _user.heightCm != null
+        ? _user.heightCm!.round().toString()
+        : '';
+    _weightController.text = _user.weightKg != null
+        ? _user.weightKg!.round().toString()
+        : '';
     _stepGoalController.text = (_user.dailyStepGoal ?? 6000).toString();
     _selectedGender = _user.gender ?? 'Man';
     _isSedentary = _user.isSedentary ?? false;
@@ -165,12 +173,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         parsedWeight = parsedWeight * 0.453592;
       }
 
-      final parsedGoal =
-          int.tryParse(_stepGoalController.text.trim()) ?? 6000;
+      final parsedGoal = int.tryParse(_stepGoalController.text.trim()) ?? 6000;
 
       final updatedUser = _user.copyWith(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
+        avatarUrl: _user.avatarUrl,
         phone: _phoneController.text.trim().isNotEmpty
             ? _phoneController.text.trim()
             : null,
@@ -186,7 +194,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       await AuthService.instance.updateCurrentUser(updatedUser);
       await SessionStore.instance.saveProfile(updatedUser);
       await SessionStore.instance.saveSession(updatedUser);
-      await StepSessionStore.instance.saveGoal(updatedUser.dailyStepGoal ?? 6000);
+      await StepSessionStore.instance.saveGoal(
+        updatedUser.dailyStepGoal ?? 6000,
+      );
 
       try {
         if (LocalDatabase.instance.isInitialized) {
@@ -349,6 +359,42 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.primaryPurple.withValues(
+                      alpha: 0.18,
+                    ),
+                    child: const Icon(
+                      LucideIcons.image,
+                      color: AppColors.primaryPurple,
+                    ),
+                  ),
+                  title: Text(
+                    'Choose profile photo',
+                    style: TextStyle(color: p.textPrimary),
+                  ),
+                  subtitle: Text(
+                    'Select an image from your gallery',
+                    style: TextStyle(color: p.textSecondary),
+                  ),
+                  onTap: () async {
+                    Navigator.of(ctx).pop();
+                    await _pickProfilePhoto();
+                  },
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'Choose Avatar Badge',
+                    style: TextStyle(
+                      color: p.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
                 Wrap(
                   spacing: 16,
                   runSpacing: 16,
@@ -377,7 +423,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                 width: 2.5,
                               ),
                             ),
-                            child: Icon(preset.icon, size: 28, color: preset.color),
+                            child: Icon(
+                              preset.icon,
+                              size: 28,
+                              color: preset.color,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -403,6 +453,31 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         );
       },
     );
+  }
+
+  Future<void> _pickProfilePhoto() async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 1200,
+      );
+      if (picked == null) return;
+
+      final directory = await getApplicationDocumentsDirectory();
+      final extension = picked.path.contains('.')
+          ? picked.path.split('.').last.toLowerCase()
+          : 'jpg';
+      final destination = File(
+        '${directory.path}${Platform.pathSeparator}profile_${_user.id}.$extension',
+      );
+      await File(picked.path).copy(destination.path);
+
+      await _persistUpdatedUser(_user.copyWith(avatarUrl: destination.path));
+      if (mounted) AppToast.success('Profile photo updated');
+    } catch (error) {
+      if (mounted) AppToast.error('Could not update profile photo: $error');
+    }
   }
 
   IconData _getAvatarIcon() {
@@ -455,7 +530,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             if (!_isEditing)
               IconButton(
                 tooltip: 'Edit Profile',
-                icon: const Icon(LucideIcons.pencil, color: AppColors.primaryPurple),
+                icon: const Icon(
+                  LucideIcons.pencil,
+                  color: AppColors.primaryPurple,
+                ),
                 onPressed: () {
                   _syncControllersFromUser();
                   setState(() => _isEditing = true);
@@ -659,6 +737,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   Widget _buildProfileHeader(AppPalette p) {
     final avatarColor = _getAvatarColor();
     final avatarIcon = _getAvatarIcon();
+    final avatarPath = _user.avatarUrl;
+    final hasPhoto =
+        avatarPath != null &&
+        avatarPath.isNotEmpty &&
+        File(avatarPath).existsSync();
     final isComplete = _user.isProfileComplete;
 
     return Column(
@@ -672,10 +755,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [
-                    avatarColor.withValues(alpha: 0.8),
-                    avatarColor,
-                  ],
+                  colors: [avatarColor.withValues(alpha: 0.8), avatarColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -688,7 +768,16 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 ],
               ),
               child: Center(
-                child: Icon(avatarIcon, size: 48, color: Colors.white),
+                child: hasPhoto
+                    ? ClipOval(
+                        child: Image.file(
+                          File(avatarPath),
+                          width: 96,
+                          height: 96,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Icon(avatarIcon, size: 48, color: Colors.white),
               ),
             ),
             GestureDetector(
@@ -721,10 +810,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         const SizedBox(height: 4),
         Text(
           _user.email.isNotEmpty ? _user.email : 'Personal Profile',
-          style: TextStyle(
-            fontSize: 14,
-            color: p.textSecondary,
-          ),
+          style: TextStyle(fontSize: 14, color: p.textSecondary),
         ),
         const SizedBox(height: 10),
         Container(
@@ -749,8 +835,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color:
-                      isComplete ? AppColors.success : const Color(0xFFFFB300),
+                  color: isComplete
+                      ? AppColors.success
+                      : const Color(0xFFFFB300),
                 ),
               ),
             ],
@@ -1139,8 +1226,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             Wrap(
               spacing: 8,
               children: _presetStepGoals.map((steps) {
-                final isSelected =
-                    _stepGoalController.text == steps.toString();
+                final isSelected = _stepGoalController.text == steps.toString();
                 return ActionChip(
                   label: Text('$steps'),
                   backgroundColor: isSelected
@@ -1148,11 +1234,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       : p.card,
                   labelStyle: TextStyle(
                     fontSize: 12,
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected
-                        ? AppColors.primaryPurple
-                        : p.textPrimary,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? AppColors.primaryPurple : p.textPrimary,
                   ),
                   side: BorderSide(
                     color: isSelected
@@ -1244,8 +1327,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       )
                     : const Text(

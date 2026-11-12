@@ -20,6 +20,7 @@ import '../../../history/history.dart';
 import '../../../splash/presentation/widgets/footprints_icon.dart';
 import '../../../track/track.dart';
 import '../../../../widgets/fade_slide_in.dart';
+import '../../../../widgets/user_avatar.dart';
 import '../widgets/daily_stats_row.dart';
 import '../widgets/dashboard_bottom_nav.dart';
 import '../widgets/goal_completion_dialog.dart';
@@ -503,10 +504,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: const Padding(
+        leading: Padding(
           padding: EdgeInsets.only(left: 20),
           child: Center(
-            child: FootprintsIcon(size: 28, color: AppColors.primaryPurple),
+            child: _currentUser == null
+                ? const FootprintsIcon(size: 28, color: AppColors.primaryPurple)
+                : UserAvatar(user: _currentUser!, size: 32),
           ),
         ),
         title: Text(
@@ -646,7 +649,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         child: MultiProvider(
           providers: [
             ChangeNotifierProvider<TrackProvider>.value(value: _trackProvider),
-            ChangeNotifierProvider<HistoryProvider>.value(value: _historyProvider),
+            ChangeNotifierProvider<HistoryProvider>.value(
+              value: _historyProvider,
+            ),
           ],
           child: IndexedStack(
             index: _currentNavIndex,
@@ -656,13 +661,17 @@ class _DashboardScreenState extends State<DashboardScreen>
               const ReportScreen(embeddedInDashboard: true),
               const HistoryScreen(embeddedInDashboard: true),
               AccountView(
-                user: _currentUser ?? widget.user ?? AuthService.instance.currentUser,
+                user:
+                    _currentUser ??
+                    widget.user ??
+                    AuthService.instance.currentUser,
                 level: _level,
                 onLogout: _handleSignOut,
                 onUserUpdated: (updated) {
                   setState(() {
                     _currentUser = updated;
-                    if (updated.dailyStepGoal != null && updated.dailyStepGoal! > 0) {
+                    if (updated.dailyStepGoal != null &&
+                        updated.dailyStepGoal! > 0) {
                       _stepGoal = updated.dailyStepGoal!;
                     }
                   });
@@ -685,10 +694,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildHomeTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 16,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

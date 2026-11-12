@@ -18,6 +18,7 @@ import '../../../../core/theme/app_palette.dart';
 import '../../../water_tracker/presentation/screens/water_tracker_screen.dart';
 import '../../../weight_tracker/presentation/screens/weight_tracker_screen.dart';
 import '../widgets/account_menu_tile.dart';
+import '../../../../widgets/user_avatar.dart';
 
 /// Body of the dashboard "Account" tab (dark theme).
 ///
@@ -100,6 +101,28 @@ class AccountView extends StatelessWidget {
                   .push(AppPageRoute(page: LevelsScreen(level: level))),
         ),
         const SizedBox(height: 16),
+        if (user != null)
+          AccountSection(
+            children: [
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                leading: UserAvatar(user: user!, size: 52),
+                title: Text(
+                  user!.name.isNotEmpty ? user!.name : 'TrackFit User',
+                  style: TextStyle(
+                    color: AppPalette.of(context).textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                subtitle: Text(
+                  user!.email,
+                  style: TextStyle(color: AppPalette.of(context).textSecondary),
+                ),
+                onTap: () => _openPersonalInfo(context),
+              ),
+            ],
+          ),
+        if (user != null) const SizedBox(height: 16),
         AccountSection(
           children: [
             AccountMenuTile(
